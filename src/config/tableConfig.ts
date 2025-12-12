@@ -7,7 +7,7 @@ export interface ConsultationData {
   customerName: string;
   consultant: string;
   type: 'Vastu' | 'Astro';
-  status: 'Completed' | 'Scheduled' | 'In Progress' | 'Cancelled';
+  status: 'Completed' | 'Scheduled' | 'In Progress' | 'Cancelled' | 'No Show';
   creationDate: string;
   bookingDateTime: string;
   orderValue: number;
