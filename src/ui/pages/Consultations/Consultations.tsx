@@ -2,10 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
-  Paper,
   Typography,
-  Card,
-  CardContent,
   Chip,
   Table,
   TableBody,
@@ -17,13 +14,12 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
-  IconButton,
   CircularProgress,
   Alert,
   Pagination,
   Stack,
 } from '@mui/material';
+
 import {
   CalendarToday,
   CheckCircle,
@@ -31,7 +27,7 @@ import {
   TrendingUp,
   Search,
 } from '@mui/icons-material';
-import StatusCell from './components/StatusCell';
+
 import { useConsultationsViewModel } from './useConsultationsViewModel';
 
 const ConsultationsTable: React.FC = () => {
@@ -378,7 +374,9 @@ const ConsultationsTable: React.FC = () => {
                 filteredData.map((row) => (
                   <TableRow
                     key={row.id}
+                    onClick={() => navigate(`/bookings/${row.id}`)}
                     sx={{
+                      cursor: 'pointer',
                       '&:hover': {
                         backgroundColor: '#f8f9fa'
                       },
@@ -403,7 +401,8 @@ const ConsultationsTable: React.FC = () => {
                     }}>
                       <Typography
                         component="span"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           // Use user_id from booking data if available, otherwise use account name
                           if (row.userId) {
                             navigate(`/account/${row.userId}`);
@@ -432,26 +431,12 @@ const ConsultationsTable: React.FC = () => {
                     }}>
                       <Typography
                         component="span"
-                        onClick={() => {
-                          // Use user_id from booking data if available, otherwise use customer name
-                          if (row.userProfileId) {
-                            navigate(`/customer/${row.userProfileId}`);
-                          } else {
-                            navigate(`/location/${row.userLocationId}`);
-                          }
-                        }}
                         sx={{
-                          color: '#2563eb',
                           fontSize: '1rem',
                           fontWeight: 500,
-                          textDecoration: 'none',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
                         }}
                       >
-                        {row.subject}
+                        {row.customerName}
                       </Typography>
                     </TableCell>
                     <TableCell sx={{
@@ -461,7 +446,8 @@ const ConsultationsTable: React.FC = () => {
                     }}>
                       <Typography
                         component="span"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           // Get staffId from the original booking data
                           const originalBooking = bookings.find(booking =>
                             booking.staff.name === row.consultant &&

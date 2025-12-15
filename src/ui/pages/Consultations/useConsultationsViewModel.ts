@@ -1,7 +1,7 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import { Booking } from '../../../backend_api_client/models/booking';
-import { ConsultationData } from './tableConfig';
+import { ConsultationData } from '../../../config/tableConfig';
 
 /**
  * View Model hook for Consultations page
@@ -13,7 +13,7 @@ export const useConsultationsViewModel = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [nextCursor, setNextCursor] = useState(0);
+    const [_, setNextCursor] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(false);
 
     // Filters
@@ -95,10 +95,10 @@ export const useConsultationsViewModel = () => {
         };
 
         return {
-            id: booking.bookingId || `booking-${index}`,
+            id: booking.id.toString(),
             bookingId: booking.bookingId || `#BK-${index.toString().padStart(3, '0')}`,
             accountName: booking.account.name,
-            subject: getSubjectName(), // Profile name for Astro, Location name for Vastu
+            customerName: getSubjectName(), // Profile name for Astro, Location name for Vastu
             consultant: booking.staff.name,
             type: getConsultationType(),
             status: getStatus(booking.status),
@@ -106,13 +106,11 @@ export const useConsultationsViewModel = () => {
             bookingDateTime: booking.scheduledStartTime || booking.createdAt,
             orderValue: 0, // Not available in current API
             userId: booking.account.userId,
-            userProfileId: (booking.consultationType === "astro") ? booking.profile!.id : null,
-            userLocationId: (booking.consultationType === "vastu") ? booking.location!.id : null,
-        } as ConsultationData;
+        };
     };
 
     // Fetch bookings function
-    const fetchBookings = async (page: number = 1) => {
+    const fetchBookings = useCallback(async (page: number = 1) => {
         try {
             setLoading(true);
             setError(null);
@@ -148,12 +146,12 @@ export const useConsultationsViewModel = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiClient]);
 
     // Fetch bookings on component mount
     useEffect(() => {
         fetchBookings(1);
-    }, []);
+    }, [fetchBookings]);
 
     // Transform booking data to consultation format
     const consultationData = useMemo(() => {
@@ -187,7 +185,7 @@ export const useConsultationsViewModel = () => {
             const matchesSearch =
                 row.bookingId.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 row.accountName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                row.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                row.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 row.consultant.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesType = typeFilter === 'All Types' || row.type === typeFilter;

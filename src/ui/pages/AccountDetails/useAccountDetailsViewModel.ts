@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import { Account } from '../../../backend_api_client/models/account';
 import { UserProfile } from '../../../backend_api_client/models/user_profile';
@@ -22,7 +22,7 @@ export const useAccountDetailsViewModel = (userId: number | null) => {
     const apiClient = useMemo(() => new BackendApiClient(), []);
 
     // Fetch all account data
-    const fetchAccountData = async (uid: number) => {
+    const fetchAccountData = useCallback(async (uid: number) => {
         try {
             setLoading(true);
             setError(null);
@@ -81,7 +81,7 @@ export const useAccountDetailsViewModel = (userId: number | null) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [apiClient]);
 
     // Fetch data when userId changes
     useEffect(() => {
@@ -91,7 +91,7 @@ export const useAccountDetailsViewModel = (userId: number | null) => {
             setLoading(false);
             setError('Invalid user ID');
         }
-    }, [userId]);
+    }, [userId, fetchAccountData]);
 
     // Calculate statistics
     const statistics = useMemo(() => {

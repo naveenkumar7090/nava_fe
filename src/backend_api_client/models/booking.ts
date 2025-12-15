@@ -15,6 +15,12 @@ export interface Booking {
     profile: {
         id: number;
         name: string;
+        dateOfBirth?: string;
+        timeOfBirth?: string;
+        placeOfBirth?: string;
+        gender?: string;
+        sunSign?: string;
+        moonSign?: string;
     } | null;
 
     // Location details (for Vastu consultations, null for Astro)

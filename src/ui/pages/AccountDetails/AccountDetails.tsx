@@ -1,4 +1,3 @@
-import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -11,11 +10,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  IconButton,
   Paper,
   CircularProgress,
   Alert,
@@ -48,11 +42,8 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
     account,
     profiles,
     locations,
-    bookings,
-    statistics,
     loading,
     error,
-    refetch
   } = useAccountDetailsViewModel(userIdNumber);
 
   const handleBackClick = () => {

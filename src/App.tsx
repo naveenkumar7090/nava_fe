@@ -16,6 +16,7 @@ import Reports from './components/Dashboard/Reports';
 import { theme } from './theme/theme';
 import './styles/globals.css';
 import './styles/components.css';
+import BookingDetails from './ui/pages/BookingDetails/BookingDetails';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -52,6 +53,7 @@ const AppContent: React.FC = () => {
         <Route path="cms" element={<CMS />} />
         <Route path="consultants" element={<Consultants />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="bookings/:id" element={<BookingDetails />} />
       </Route>
     </Routes>
   );

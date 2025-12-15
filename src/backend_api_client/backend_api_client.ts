@@ -3,11 +3,14 @@ import { Booking } from "./models/booking";
 import { Account } from "./models/account";
 import { UserProfile } from "./models/user_profile";
 import { UserLocation } from "./models/user_location";
+import { UpdateRemedyData } from "./models/update_remedy_options";
+import { RemedyData } from "./models/remedy_data";
 
 export class BackendApiClient {
     private client: AxiosInstance;
 
-    constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+    // Defaulting to localhost:3000 as that is likely where the local backend is running
+    constructor(baseURL: string = "http://127.0.0.1:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -29,6 +32,19 @@ export class BackendApiClient {
             return response.data;
         } catch (error) {
             console.error("Failed to fetch bookings:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get a specific booking by ID (Admin)
+     */
+    async getAdminBooking(bookingId: number): Promise<Booking> {
+        try {
+            const response = await this.client.get(`/admin/consultation/bookings/${bookingId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch booking ${bookingId}:`, error);
             throw error;
         }
     }
@@ -122,4 +138,22 @@ export class BackendApiClient {
             throw error;
         }
     }
+    // ==================== Remedy Endpoints ====================
+
+    /**
+     * Update remedy data for a consultation
+     */
+    async updateRemedyData(consultationId: number, opts: UpdateRemedyData): Promise<void> {
+        const response = await this.client.put(`/admin/consultation/${consultationId}/remedy`, opts);
+        return response.data;
+    }
+
+    /**
+     * Get remedy data for a consultation
+     */
+    async getRemedyPDF(consultationId: number): Promise<RemedyData> {
+        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`);
+        return response.data;
+    }
 }
+
