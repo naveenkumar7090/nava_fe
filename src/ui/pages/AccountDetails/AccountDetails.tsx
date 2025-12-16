@@ -682,6 +682,16 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                                 </Box>
                               </Box>
                             )}
+
+                            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                              <Button
+                                size="small"
+                                variant="outlined"
+                                onClick={() => navigate(`/user-location/${location.id}`)}
+                              >
+                                View Details
+                              </Button>
+                            </Box>
                           </Box>
                         ) : (
                           <Typography variant="body2" color="text.secondary">

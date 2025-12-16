@@ -431,9 +431,24 @@ const ConsultationsTable: React.FC = () => {
                     }}>
                       <Typography
                         component="span"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // Use user_id from booking data if available, otherwise use customer name
+                          if (row.type === 'Vastu' && row.locationId) {
+                            navigate(`/user-location/${row.locationId}`);
+                          } else if (row.userId && row.type !== 'Vastu') {
+                            navigate(`/user-profiles/${row.userId}/${row.profileId || 'default'}`);
+                          }
+                        }}
                         sx={{
+                          color: '#2563eb', // Always blue to indicate link
                           fontSize: '1rem',
                           fontWeight: 500,
+                          textDecoration: 'none',
+                          cursor: 'pointer', // Always pointer
+                          '&:hover': {
+                            textDecoration: 'underline'
+                          }
                         }}
                       >
                         {row.customerName}
@@ -448,14 +463,8 @@ const ConsultationsTable: React.FC = () => {
                         component="span"
                         onClick={(e) => {
                           e.stopPropagation();
-                          // Get staffId from the original booking data
-                          const originalBooking = bookings.find(booking =>
-                            booking.staff.name === row.consultant &&
-                            booking.bookingId === row.id
-                          );
-                          if (originalBooking && originalBooking.staff.id) {
-                            navigate(`/consultant/${originalBooking.staff.id}`);
-                          }
+
+                          navigate(`/consultant-details/${row.consultantId}`);
                         }}
                         sx={{
                           color: '#2563eb',

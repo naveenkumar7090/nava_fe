@@ -53,5 +53,6 @@ export interface Booking {
     preferredLanguage: string;
     topicOfDiscussion: string | null;
     rating: number | null;
+    meetingLink: string | null;
     updatedAt: string;
 }

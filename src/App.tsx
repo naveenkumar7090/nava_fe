@@ -5,18 +5,20 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/Login/LoginPage';
 import Dashboard from './components/Dashboard/Dashboard';
-import ConsultationsTable from './ui/pages/Consultations/Consultations';
-import AccountDetails from './ui/pages/AccountDetails/AccountDetails';
-import ConsultantOverview from './components/Dashboard/ConsultantOverview';
-import ConsultantDetails from './components/Dashboard/ConsultantDetails';
-import CustomerProfile from './components/Dashboard/CustomerProfile';
 import CMS from './components/Dashboard/CMS';
-import Consultants from './components/Dashboard/Consultants';
+import Consultants from './ui/pages/Consultants/Consultants';
 import Reports from './components/Dashboard/Reports';
 import { theme } from './theme/theme';
 import './styles/globals.css';
 import './styles/components.css';
+
+import ConsultationsTable from './ui/pages/Consultations/Consultations';
+import AccountDetails from './ui/pages/AccountDetails/AccountDetails';
+import ConsultantOverview from './components/Dashboard/ConsultantOverview';
+import ConsultantDetails from './ui/pages/ConsultantDetails/ConsultantDetails';
+import CustomerProfile from './ui/pages/CustomerProfile/CustomerProfile';
 import BookingDetails from './ui/pages/BookingDetails/BookingDetails';
+import UserLocationDetails from './ui/pages/UserLocationDetails/UserLocationDetails';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -49,11 +51,12 @@ const AppContent: React.FC = () => {
         <Route path="account/:userId" element={<AccountDetails />} />
         <Route path="consultant/:staffId" element={<ConsultantOverview />} />
         <Route path="consultant-details/:staffId" element={<ConsultantDetails />} />
-        <Route path="customer/:userId" element={<CustomerProfile />} />
+        <Route path="user-profiles/:userId/:userProfileId" element={<CustomerProfile />} />
         <Route path="cms" element={<CMS />} />
         <Route path="consultants" element={<Consultants />} />
         <Route path="reports" element={<Reports />} />
         <Route path="bookings/:id" element={<BookingDetails />} />
+        <Route path="user-location/:locationId" element={<UserLocationDetails />} />
       </Route>
     </Routes>
   );

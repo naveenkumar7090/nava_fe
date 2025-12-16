@@ -10,7 +10,7 @@ export class BackendApiClient {
     private client: AxiosInstance;
 
     // Defaulting to localhost:3000 as that is likely where the local backend is running
-    constructor(baseURL: string = "http://127.0.0.1:3000", authToken: string = "admin_access_token") {
+    constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -21,10 +21,13 @@ export class BackendApiClient {
 
     // ==================== Consultation Endpoints ====================
 
-    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string): Promise<{ bookings: Booking[], next: number }> {
+    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string, profileId?: number): Promise<{ bookings: Booking[], next: number }> {
         const params: any = { limit, next };
         if (staffId) {
             params.staffId = staffId;
+        }
+        if (profileId) {
+            params.profileId = profileId;
         }
 
         try {
@@ -32,6 +35,26 @@ export class BackendApiClient {
             return response.data;
         } catch (error) {
             console.error("Failed to fetch bookings:", error);
+            throw error;
+        }
+    }
+
+    async getStaffDetails(staffId: string): Promise<any> {
+        try {
+            const response = await this.client.get(`/admin/consultation/staff/${staffId}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch staff details for ${staffId}:`, error);
+            throw error;
+        }
+    }
+
+    async getConsultants(): Promise<any[]> {
+        try {
+            const response = await this.client.get('/admin/consultation/staff');
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch consultants:", error);
             throw error;
         }
     }
@@ -45,6 +68,50 @@ export class BackendApiClient {
             return response.data;
         } catch (error) {
             console.error(`Failed to fetch booking ${bookingId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Update status of a booking (Admin)
+     */
+    async updateBookingStatus(bookingId: number, status: 'completed' | 'cancel' | 'noshow'): Promise<void> {
+        try {
+            await this.client.put(`/admin/consultation/bookings/${bookingId}/status`, { status });
+        } catch (error) {
+            console.error(`Failed to update booking status ${bookingId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get available slots for rescheduling
+     */
+    async getBookingSlots(bookingId: number, date: string): Promise<{ slots: Date[] }> {
+        try {
+            const response = await this.client.get(`/admin/consultation/bookings/${bookingId}/slots`, { params: { date } });
+            // API returns ISO strings, client might want Dates
+            // Although here we assume the backend returns what we need.
+            // Based on backend implementation NewConsultationService.getSlotsForBooking -> return { slots }
+            // and ZohoService.getAppointmentSlots -> return Date[]
+            // So response.data.slots will be strings (ISO) over JSON.
+            return {
+                slots: response.data.slots.map((s: string) => new Date(s))
+            };
+        } catch (error) {
+            console.error(`Failed to fetch slots for booking ${bookingId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Reschedule a booking
+     */
+    async rescheduleBooking(bookingId: number, startTime: string): Promise<void> {
+        try {
+            await this.client.put(`/admin/consultation/bookings/${bookingId}/reschedule`, { startTime });
+        } catch (error) {
+            console.error(`Failed to reschedule booking ${bookingId}:`, error);
             throw error;
         }
     }
@@ -138,6 +205,19 @@ export class BackendApiClient {
             throw error;
         }
     }
+
+    /**
+     * Get a specific user location by ID
+     */
+    async getUserLocationById(id: number): Promise<UserLocation> {
+        try {
+            const response = await this.client.get(`/admin/location/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch user location ${id}:`, error);
+            throw error;
+        }
+    }
     // ==================== Remedy Endpoints ====================
 
     /**
@@ -156,4 +236,6 @@ export class BackendApiClient {
         return response.data;
     }
 }
+
+export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://localhost:3000');
 

@@ -106,6 +106,9 @@ export const useConsultationsViewModel = () => {
             bookingDateTime: booking.scheduledStartTime || booking.createdAt,
             orderValue: 0, // Not available in current API
             userId: booking.account.userId,
+            profileId: booking.profile?.id ?? null,
+            locationId: booking.location?.id ?? null,
+            consultantId: booking.staff.id,
         };
     };
 

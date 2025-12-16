@@ -90,6 +90,65 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         }
     };
 
+    const updateStatus = async (status: 'completed' | 'cancel' | 'noshow') => {
+        if (!bookingId) return;
+
+        if (!window.confirm(`Are you sure you want to mark this booking as ${status}?`)) {
+            return;
+        }
+
+        try {
+            await apiClient.updateBookingStatus(bookingId, status);
+            // Refresh booking details
+            const data = await apiClient.getAdminBooking(bookingId);
+            setBooking(data);
+        } catch (e) {
+            alert(`Failed to update status: ${e instanceof Error ? e.message : 'Unknown error'}`);
+        }
+    };
+
+    const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [availableSlots, setAvailableSlots] = useState<Date[]>([]);
+    const [loadingSlots, setLoadingSlots] = useState(false);
+
+    const checkAvailability = async (date: Date) => {
+        if (!bookingId) return;
+        setLoadingSlots(true);
+        setSelectedDate(date);
+        try {
+            const dateStr = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            const { slots } = await apiClient.getBookingSlots(bookingId, dateStr);
+            setAvailableSlots(slots);
+        } catch (e) {
+            console.error("Failed to check availability", e);
+            alert("Failed to fetch slots");
+        } finally {
+            setLoadingSlots(false);
+        }
+    };
+
+    const confirmReschedule = async (slot: Date) => {
+        if (!bookingId) return;
+        if (!window.confirm(`Reschedule to ${slot.toLocaleString()}?`)) return;
+
+        try {
+            await apiClient.rescheduleBooking(bookingId, slot.toISOString());
+            setRescheduleDialogOpen(false);
+            const data = await apiClient.getAdminBooking(bookingId);
+            setBooking(data);
+            alert("Rescheduled successfully!");
+        } catch (e) {
+            alert("Failed to reschedule");
+        }
+    };
+
+    const openRescheduleDialog = () => {
+        setRescheduleDialogOpen(true);
+        // Default to today
+        checkAvailability(new Date());
+    };
+
     return {
         booking,
         loading,
@@ -97,6 +156,17 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         remedyData,
         handleRemedyInputChange,
         isSaving,
-        saveRemedyData
+        saveRemedyData,
+        updateStatus,
+        rescheduleState: {
+            open: rescheduleDialogOpen,
+            setOpen: setRescheduleDialogOpen,
+            openDialog: openRescheduleDialog,
+            selectedDate,
+            availableSlots,
+            loadingSlots,
+            checkAvailability,
+            confirmReschedule
+        }
     };
 };

@@ -13,7 +13,15 @@ import {
     Avatar,
     Stack,
     Alert,
-    TextField
+    TextField,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    List,
+    ListItem,
+    ListItemButton,
+    ListItemText
 } from '@mui/material';
 import {
     ArrowBack,
@@ -24,7 +32,9 @@ import {
     Star,
     LocationOn,
     Person,
-    Save
+    Save,
+    Link,
+    EditCalendar
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
 
@@ -38,7 +48,9 @@ const BookingDetails = () => {
         remedyData,
         handleRemedyInputChange,
         isSaving,
-        saveRemedyData
+        saveRemedyData,
+        updateStatus,
+        rescheduleState
     } = useBookingDetailsViewModel(id ? parseInt(id) : null);
 
     const handleBack = () => {
@@ -104,6 +116,50 @@ const BookingDetails = () => {
                         height: 28
                     }}
                 />
+
+                <Box sx={{ ml: 'auto', display: 'flex', gap: 1 }}>
+                    {booking.status === 'upcoming' && (
+                        <>
+                            <Button
+                                variant="outlined"
+                                color="primary"
+                                size="small"
+                                startIcon={<EditCalendar />}
+                                onClick={() => rescheduleState?.openDialog()}
+                            >
+                                Reschedule
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="error"
+                                size="small"
+                                onClick={() => updateStatus('cancel')}
+                            >
+                                Cancel
+                            </Button>
+                        </>
+                    )}
+                    {(booking.status === 'yet_to_mark') && (
+                        <>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                size="small"
+                                onClick={() => updateStatus('completed')}
+                            >
+                                Mark Completed
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="warning"
+                                size="small"
+                                onClick={() => updateStatus('noshow')}
+                            >
+                                Mark No Show
+                            </Button>
+                        </>
+                    )}
+                </Box>
             </Box>
 
             {/* Main Grid */}
@@ -177,6 +233,25 @@ const BookingDetails = () => {
                                     </Stack>
                                 </Grid>
                             </Grid>
+
+                            {booking.meetingLink && (
+                                <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #eee' }}>
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                        Meeting Link
+                                    </Typography>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        startIcon={<Link />}
+                                        href={booking.meetingLink}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{ textTransform: 'none' }}
+                                    >
+                                        Join Meeting
+                                    </Button>
+                                </Box>
+                            )}
 
                             {booking.topicOfDiscussion && (
                                 <Box sx={{ mt: 3 }}>
@@ -289,7 +364,17 @@ const BookingDetails = () => {
                                     {booking.account?.name?.charAt(0).toUpperCase()}
                                 </Avatar>
                                 <Box sx={{ overflow: 'hidden' }}>
-                                    <Typography variant="subtitle1" fontWeight="bold" noWrap>
+                                    <Typography
+                                        variant="subtitle1"
+                                        fontWeight="bold"
+                                        noWrap
+                                        sx={{
+                                            cursor: 'pointer',
+                                            color: 'primary.main',
+                                            '&:hover': { textDecoration: 'underline' }
+                                        }}
+                                        onClick={() => navigate(`/account/${booking.account.userId}`)}
+                                    >
                                         {booking.account?.name}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary" noWrap>
@@ -332,7 +417,17 @@ const BookingDetails = () => {
                                         </Stack>
 
                                         <Box sx={{ pl: 3.5 }}>
-                                            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                            <Typography
+                                                variant="h6"
+                                                fontWeight="bold"
+                                                gutterBottom
+                                                sx={{
+                                                    cursor: 'pointer',
+                                                    color: 'primary.main',
+                                                    '&:hover': { textDecoration: 'underline' }
+                                                }}
+                                                onClick={() => navigate(`/user-profiles/${booking.account.userId}/${booking.profile?.id}`)}
+                                            >
                                                 {booking.profile.name}
                                             </Typography>
 
@@ -423,6 +518,61 @@ const BookingDetails = () => {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Reschedule Dialog */}
+            <Dialog
+                open={!!rescheduleState?.open}
+                onClose={() => rescheduleState?.setOpen(false)}
+                fullWidth
+                maxWidth="sm"
+            >
+                <DialogTitle>Reschedule Appointment</DialogTitle>
+                <DialogContent>
+                    <Box sx={{ mt: 2 }}>
+                        <TextField
+                            label="Select Date"
+                            type="date"
+                            fullWidth
+                            InputLabelProps={{ shrink: true }}
+                            value={rescheduleState?.selectedDate ? rescheduleState.selectedDate.toISOString().split('T')[0] : ''}
+                            inputProps={{ min: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0] }}
+                            onChange={(e) => rescheduleState?.checkAvailability(new Date(e.target.value))}
+                        />
+
+                        {rescheduleState?.loadingSlots ? (
+                            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                                <CircularProgress />
+                            </Box>
+                        ) : (
+                            <Box sx={{ mt: 3 }}>
+                                {rescheduleState?.availableSlots.length > 0 ? (
+                                    <>
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Available Slots for {rescheduleState.selectedDate?.toLocaleDateString()}
+                                        </Typography>
+                                        <List sx={{ maxHeight: 300, overflow: 'auto', bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                                            {rescheduleState.availableSlots.map((slot, index) => (
+                                                <ListItem key={index} disablePadding>
+                                                    <ListItemButton onClick={() => rescheduleState.confirmReschedule(slot)}>
+                                                        <ListItemText
+                                                            primary={slot.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        />
+                                                    </ListItemButton>
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </>
+                                ) : rescheduleState?.selectedDate ? (
+                                    <Alert severity="info">No slots available for this date.</Alert>
+                                ) : null}
+                            </Box>
+                        )}
+                    </Box>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => rescheduleState?.setOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
