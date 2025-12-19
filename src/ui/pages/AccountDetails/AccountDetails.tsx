@@ -1,4 +1,6 @@
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import {
   Box,
   Typography,
@@ -21,6 +23,8 @@ import {
   Description,
   Home,
   Business,
+  Upload,
+  PictureAsPdf,
 } from '@mui/icons-material';
 import { useAccountDetailsViewModel } from './useAccountDetailsViewModel';
 
@@ -46,6 +50,19 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
     error,
   } = useAccountDetailsViewModel(userIdNumber);
 
+  // State for uploaded maps
+  const [uploadedMaps, setUploadedMaps] = useState<Array<{ 
+    id?: number;
+    name: string; 
+    type: string; 
+    file?: File;
+    downloadUrl?: string;
+    createdAt?: string;
+  }>>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const apiClient = useMemo(() => new BackendApiClient(), []);
+
   const handleBackClick = () => {
     navigate('/consultations');
   };
@@ -53,6 +70,161 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   const handleDownloadKundli = () => {
     // Implement download functionality
     console.log('Download KUNDLI');
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    // Filter PDF files
+    const pdfFiles = Array.from(files).filter(file => {
+      const isPDF = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      if (!isPDF) {
+        alert(`${file.name} is not a PDF file. Only PDF files are allowed.`);
+        return false;
+      }
+      return true;
+    });
+
+    if (pdfFiles.length === 0) return;
+
+    // Check if we have at least one location
+    if (!locations || locations.length === 0) {
+      alert('No locations found. Please create a location first.');
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      return;
+    }
+
+    // Use the first location for upload (you can enhance this to let user select)
+    const userLocationId = locations[0].id;
+    setUploading(true);
+
+    try {
+      // Upload each file directly to database
+      for (const file of pdfFiles) {
+        try {
+          const result = await apiClient.uploadMapPdf(userLocationId, file);
+          
+          // Add to local state
+          setUploadedMaps(prev => [...prev, {
+            id: result.id,
+            name: result.fileName,
+            type: 'pdf',
+            downloadUrl: `/location/user/${userLocationId}/map/${result.id}`,
+          }]);
+        } catch (error) {
+          console.error(`Failed to upload ${file.name}:`, error);
+          alert(`Failed to upload ${file.name}. Please try again.`);
+        }
+      }
+
+      // Refresh maps list
+      await fetchMapsForLocations();
+      alert(`${pdfFiles.length} PDF file(s) uploaded successfully!`);
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Failed to upload files. Please try again.');
+    } finally {
+      setUploading(false);
+      // Reset the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Fetch maps for all locations
+  const fetchMapsForLocations = async () => {
+    if (!locations || locations.length === 0) {
+      console.log('No locations available, skipping map fetch');
+      setUploadedMaps([]);
+      return;
+    }
+
+    console.log('Fetching maps for locations:', locations.map(l => ({ id: l.id, name: l.locationName })));
+
+    try {
+      const allMaps: Array<{ 
+        id?: number;
+        name: string; 
+        type: string; 
+        fileUrl?: string;
+        createdAt?: string;
+      }> = [];
+
+      // Fetch maps for each location
+      for (const location of locations) {
+        try {
+          console.log(`Fetching maps for location ${location.id}...`);
+          const maps = await apiClient.getMapPdfs(location.id);
+          console.log(`Found ${maps.length} maps for location ${location.id}`);
+          allMaps.push(...maps.map(map => ({
+            id: map.id,
+            name: map.fileName,
+            type: 'pdf',
+            downloadUrl: map.downloadUrl,
+            createdAt: map.createdAt,
+          })));
+        } catch (error) {
+          console.error(`Failed to fetch maps for location ${location.id}:`, error);
+        }
+      }
+
+      console.log(`Total maps fetched: ${allMaps.length}`);
+      setUploadedMaps(allMaps);
+    } catch (error) {
+      console.error('Failed to fetch maps:', error);
+      setUploadedMaps([]);
+    }
+  };
+
+  // Fetch maps when locations are loaded
+  useEffect(() => {
+    console.log('🔍 Locations effect triggered:', {
+      locationsLength: locations?.length || 0,
+      locations: locations,
+      loading: loading
+    });
+    
+    if (!loading && locations && locations.length > 0) {
+      console.log('✅ Fetching maps for', locations.length, 'locations');
+      fetchMapsForLocations();
+    } else if (!loading) {
+      console.log('⚠️ No locations available or still loading');
+      // Clear maps if no locations
+      setUploadedMaps([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locations, loading]);
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleMapClick = async (map: { id?: number; name: string; type: string; file?: File; downloadUrl?: string }) => {
+    if (map.file) {
+      // Create a blob URL and download the file
+      const url = URL.createObjectURL(map.file);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = map.name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else if (map.downloadUrl && map.id && locations && locations.length > 0) {
+      // For existing maps, download from API
+      try {
+        await apiClient.downloadMapPdf(locations[0].id, map.id, map.name);
+      } catch (error) {
+        console.error('Failed to download map:', error);
+        alert('Failed to download map. Please try again.');
+      }
+    } else {
+      console.log('Opening map:', map.name);
+    }
   };
 
   // Helper function to get user initials
@@ -148,9 +320,11 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           }
         ],
         legacyMaps: [
-          { name: 'map1.jpg', type: 'image' },
-          { name: 'map2.jpg', type: 'image' },
-          { name: 'floor-plan.pdf', type: 'pdf' }
+          ...(uploadedMaps.length > 0 ? uploadedMaps : [
+            { name: 'map1.jpg', type: 'image' },
+            { name: 'map2.jpg', type: 'image' },
+            { name: 'floor-plan.pdf', type: 'pdf' }
+          ])
         ]
       };
     }
@@ -172,7 +346,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
       associatedProfiles: [],
       vastuStates: [],
       activity: [],
-      legacyMaps: []
+      legacyMaps: uploadedMaps
     };
   };
 
@@ -709,39 +883,108 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           {/* Legacy Vastu Maps */}
           <Card sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Business sx={{ color: '#1f2937' }} />
-                <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
-                  Legacy Vastu Maps
-                </Typography>
+              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Business sx={{ color: '#1f2937' }} />
+                  <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
+                    Legacy Vastu Maps
+                  </Typography>
+                </Box>
+                <Button
+                  variant="contained"
+                  startIcon={<Upload />}
+                  onClick={handleUploadClick}
+                  disabled={uploading || !locations || locations.length === 0}
+                  title={!locations || locations.length === 0 ? 'No locations found. Please create a location first.' : ''}
+                  sx={{
+                    textTransform: 'none',
+                    backgroundColor: '#2563eb',
+                    '&:hover': {
+                      backgroundColor: '#1d4ed8'
+                    },
+                    '&:disabled': {
+                      backgroundColor: '#9ca3af'
+                    }
+                  }}
+                >
+                  {uploading ? 'Uploading...' : 'Upload PDF'}
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  multiple
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                />
               </Box>
 
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                gap: 2
-              }}>
-                {accountData.legacyMaps.map((map, index) => (
-                  <Paper
-                    key={index}
-                    sx={{
-                      p: 2,
-                      textAlign: 'center',
-                      cursor: 'pointer',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: 2,
-                      '&:hover': {
-                        backgroundColor: '#f8f9fa'
-                      }
-                    }}
-                  >
-                    <Description sx={{ fontSize: 40, color: '#6b7280', mb: 1 }} />
-                    <Typography variant="body2" fontWeight="500">
-                      {map.name}
-                    </Typography>
-                  </Paper>
-                ))}
-              </Box>
+              {!locations || locations.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <PictureAsPdf sx={{ fontSize: 60, color: '#d1d5db', mb: 2 }} />
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    No locations found for this user.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
+                    Please create a location first before uploading maps.
+                  </Typography>
+                </Box>
+              ) : uploadedMaps.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <PictureAsPdf sx={{ fontSize: 60, color: '#d1d5db', mb: 2 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    No maps uploaded yet. Click "Upload PDF" to add a map.
+                  </Typography>
+                </Box>
+              ) : (
+                <Box sx={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                  gap: 2
+                }}>
+                  {uploadedMaps.map((map, index) => (
+                    <Paper
+                      key={index}
+                      onClick={() => handleMapClick(map)}
+                      sx={{
+                        p: 2,
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: 2,
+                        transition: 'all 0.2s',
+                        '&:hover': {
+                          backgroundColor: '#f8f9fa',
+                          borderColor: '#2563eb',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }
+                      }}
+                    >
+                      {map.type === 'pdf' ? (
+                        <PictureAsPdf sx={{ fontSize: 40, color: '#dc2626', mb: 1 }} />
+                      ) : (
+                        <Description sx={{ fontSize: 40, color: '#6b7280', mb: 1 }} />
+                      )}
+                      <Typography variant="body2" fontWeight="500" sx={{ 
+                        wordBreak: 'break-word',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical'
+                      }}>
+                        {map.name}
+                      </Typography>
+                      {map.file && (
+                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                          New
+                        </Typography>
+                      )}
+                    </Paper>
+                  ))}
+                </Box>
+              )}
             </CardContent>
           </Card>
         </Box>

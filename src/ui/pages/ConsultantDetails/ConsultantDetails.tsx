@@ -25,7 +25,6 @@ import {
   Phone,
   Email,
 } from '@mui/icons-material';
-import { format } from 'date-fns';
 import { useConsultantDetailsViewModel } from './useConsultantDetailsViewModel';
 
 // Interface moved to ViewModel, but we might need it for prop types if we break components down

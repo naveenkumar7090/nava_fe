@@ -2,12 +2,14 @@ import { useState, useEffect, useMemo } from 'react';
 import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import { UserProfile } from '../../../backend_api_client/models/user_profile';
 import { Booking } from '../../../backend_api_client/models/booking';
+import { RemedyData } from '../../../backend_api_client/models/remedy_data';
 
 export const useCustomerProfileViewModel = (userId: string | undefined, profileId: string | undefined) => {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [remedyDataMap, setRemedyDataMap] = useState<Map<number, RemedyData>>(new Map());
 
     const apiClient = useMemo(() => new BackendApiClient(), []);
 
@@ -43,6 +45,25 @@ export const useCustomerProfileViewModel = (userId: string | undefined, profileI
                 if (profileData && profileData.id) {
                     const bookingsData = await apiClient.getAdminBookings(100, 0, undefined, profileData.id);
                     setBookings(bookingsData.bookings);
+
+                    // 3. Fetch remedy data for completed bookings
+                    const remedyMap = new Map<number, RemedyData>();
+                    const completedBookings = bookingsData.bookings.filter(b => b.status?.toLowerCase() === 'completed');
+                    
+                    await Promise.all(
+                        completedBookings.map(async (booking) => {
+                            try {
+                                const remedy = await apiClient.getRemedyPDF(booking.id);
+                                if (remedy && (remedy.problems || remedy.diagnosis || remedy.suggestions || remedy.products || remedy.reminders)) {
+                                    remedyMap.set(booking.id, remedy);
+                                }
+                            } catch (err) {
+                                // No remedy data found for this booking, skip it
+                                console.log(`No remedy data for booking ${booking.id}`);
+                            }
+                        })
+                    );
+                    setRemedyDataMap(remedyMap);
                 }
 
             } catch (err) {
@@ -60,6 +81,7 @@ export const useCustomerProfileViewModel = (userId: string | undefined, profileI
         profile,
         bookings,
         loading,
-        error
+        error,
+        remedyDataMap
     };
 };

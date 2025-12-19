@@ -28,17 +28,244 @@ import {
   Cake,
   AccessTime,
   WbSunny,
-  NightsStay
+  NightsStay,
+  PictureAsPdf
 } from '@mui/icons-material';
 import { useCustomerProfileViewModel } from './useCustomerProfileViewModel';
+import { Booking } from '../../../backend_api_client/models/booking';
+import jsPDF from 'jspdf';
 
 const CustomerProfile = () => {
   const { userId, userProfileId } = useParams<{ userId: string; userProfileId: string }>();
   const navigate = useNavigate();
-  const { profile, bookings, loading, error } = useCustomerProfileViewModel(userId, userProfileId);
+  const { profile, bookings, loading, error, remedyDataMap } = useCustomerProfileViewModel(userId, userProfileId);
 
   const handleBack = () => {
     navigate(-1);
+  };
+
+  const generateAndDownloadRemedyPDF = (booking: Booking) => {
+    const remedyData = remedyDataMap.get(booking.id);
+    if (!remedyData) {
+      alert('No remedy data available for this booking.');
+      return;
+    }
+
+    // Validate that at least one remedy field has content
+    const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.suggestions || remedyData.products || remedyData.reminders;
+    if (!hasContent) {
+      alert('No remedy information available for this booking.');
+      return;
+    }
+
+    try {
+      // Create new PDF document
+      const doc = new jsPDF();
+      
+      // Set font and title
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Remedy Report', 20, 30);
+      
+      let yPosition = 50;
+
+      // Booking Information Section
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Booking Information', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Booking ID: ${booking.bookingId}`, 20, yPosition);
+      yPosition += 8;
+      doc.text(`Service: ${booking.service?.name || 'N/A'}`, 20, yPosition);
+      yPosition += 8;
+      doc.text(`Consultation Type: ${booking.consultationType?.charAt(0).toUpperCase() + booking.consultationType?.slice(1) || 'N/A'}`, 20, yPosition);
+      yPosition += 8;
+      if (booking.scheduledStartTime) {
+        const scheduledDate = new Date(booking.scheduledStartTime);
+        doc.text(`Consultation Date: ${scheduledDate.toLocaleDateString(undefined, {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}`, 20, yPosition);
+        yPosition += 8;
+        doc.text(`Consultation Time: ${scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, 20, yPosition);
+        yPosition += 8;
+      }
+      doc.text(`Status: ${booking.status}`, 20, yPosition);
+      yPosition += 15;
+
+      // Customer Information Section
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Customer Information', 20, yPosition);
+      yPosition += 10;
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Name: ${booking.account?.name || 'N/A'}`, 20, yPosition);
+      yPosition += 8;
+      doc.text(`Email: ${booking.account?.email || 'N/A'}`, 20, yPosition);
+      yPosition += 8;
+      doc.text(`Mobile: ${booking.account?.mobile || 'N/A'}`, 20, yPosition);
+      yPosition += 15;
+
+      // Profile Information Section (if available)
+      if (booking.profile) {
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Astro Profile Information', 20, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Profile Name: ${booking.profile.name || 'N/A'}`, 20, yPosition);
+        yPosition += 8;
+        if (booking.profile.dateOfBirth) {
+          const dob = new Date(booking.profile.dateOfBirth);
+          doc.text(`Date of Birth: ${dob.toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}`, 20, yPosition);
+          yPosition += 8;
+        }
+        if (booking.profile.timeOfBirth) {
+          const tob = new Date(booking.profile.timeOfBirth);
+          doc.text(`Time of Birth: ${tob.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, 20, yPosition);
+          yPosition += 8;
+        }
+        if (booking.profile.placeOfBirth) {
+          doc.text(`Place of Birth: ${booking.profile.placeOfBirth}`, 20, yPosition);
+          yPosition += 8;
+        }
+        if (booking.profile.gender) {
+          doc.text(`Gender: ${booking.profile.gender}`, 20, yPosition);
+          yPosition += 8;
+        }
+        if (booking.profile.sunSign) {
+          doc.text(`Sun Sign: ${booking.profile.sunSign}`, 20, yPosition);
+          yPosition += 8;
+        }
+        if (booking.profile.moonSign) {
+          doc.text(`Moon Sign: ${booking.profile.moonSign}`, 20, yPosition);
+          yPosition += 8;
+        }
+        yPosition += 10;
+      }
+
+      // Check if we need a new page
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = 30;
+      }
+
+      // Remedy Information Section
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Remedy Information', 20, yPosition);
+      yPosition += 15;
+      
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      
+      // Problems section
+      if (remedyData.problems) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Problems:', 20, yPosition);
+        yPosition += 8;
+        doc.setFont('helvetica', 'normal');
+        const problemsLines = doc.splitTextToSize(remedyData.problems, 170);
+        doc.text(problemsLines, 20, yPosition);
+        yPosition += problemsLines.length * 6 + 10;
+        
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 30;
+        }
+      }
+      
+      // Diagnosis section
+      if (remedyData.diagnosis) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Diagnosis:', 20, yPosition);
+        yPosition += 8;
+        doc.setFont('helvetica', 'normal');
+        const diagnosisLines = doc.splitTextToSize(remedyData.diagnosis, 170);
+        doc.text(diagnosisLines, 20, yPosition);
+        yPosition += diagnosisLines.length * 6 + 10;
+        
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 30;
+        }
+      }
+      
+      // Suggestions section
+      if (remedyData.suggestions) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Suggestions:', 20, yPosition);
+        yPosition += 8;
+        doc.setFont('helvetica', 'normal');
+        const suggestionsLines = doc.splitTextToSize(remedyData.suggestions, 170);
+        doc.text(suggestionsLines, 20, yPosition);
+        yPosition += suggestionsLines.length * 6 + 10;
+        
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 30;
+        }
+      }
+      
+      // Products section
+      if (remedyData.products) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Recommended Products:', 20, yPosition);
+        yPosition += 8;
+        doc.setFont('helvetica', 'normal');
+        const productsLines = doc.splitTextToSize(remedyData.products, 170);
+        doc.text(productsLines, 20, yPosition);
+        yPosition += productsLines.length * 6 + 10;
+        
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 30;
+        }
+      }
+      
+      // Reminders section
+      if (remedyData.reminders) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Reminders:', 20, yPosition);
+        yPosition += 8;
+        doc.setFont('helvetica', 'normal');
+        const remindersLines = doc.splitTextToSize(remedyData.reminders, 170);
+        doc.text(remindersLines, 20, yPosition);
+      }
+      
+      // Add footer with date
+      const currentDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'italic');
+      doc.text(`Generated on: ${currentDate}`, 20, doc.internal.pageSize.height - 20);
+      
+      // Generate filename
+      const customerName = booking.account?.name?.replace(/\s+/g, '_') || 'customer';
+      const fileName = `remedy_${customerName}_${booking.bookingId}_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      // Download the PDF
+      doc.save(fileName);
+      
+    } catch (error) {
+      console.error('❌ Error generating PDF:', error);
+      alert('Error generating PDF. Please try again.');
+    }
   };
 
   if (loading) {
@@ -224,6 +451,7 @@ const CustomerProfile = () => {
                         <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '1rem', py: 2.5, borderBottom: '1px solid #f0f0f0' }}>Status</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '1rem', py: 2.5, borderBottom: '1px solid #f0f0f0' }}>Creation Date</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '1rem', py: 2.5, borderBottom: '1px solid #f0f0f0' }}>Booking Date & Time</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: '#374151', fontSize: '1rem', py: 2.5, borderBottom: '1px solid #f0f0f0' }}>Remedy Info</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -321,6 +549,34 @@ const CustomerProfile = () => {
                                 hour12: true
                               })}`
                               : 'Not Scheduled'}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '1rem', py: 2.5, borderBottom: '1px solid #f0f0f0' }}>
+                            {remedyDataMap.has(booking.id) ? (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                startIcon={<PictureAsPdf />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  generateAndDownloadRemedyPDF(booking);
+                                }}
+                                sx={{
+                                  textTransform: 'none',
+                                  borderColor: '#dc2626',
+                                  color: '#dc2626',
+                                  '&:hover': {
+                                    borderColor: '#b91c1c',
+                                    backgroundColor: '#fef2f2'
+                                  }
+                                }}
+                              >
+                                Download PDF
+                              </Button>
+                            ) : (
+                              <Typography variant="body2" color="text.secondary">
+                                N/A
+                              </Typography>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}

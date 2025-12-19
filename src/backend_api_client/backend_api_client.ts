@@ -199,7 +199,14 @@ export class BackendApiClient {
         const params = { limit, next };
         try {
             const response = await this.client.get(`/admin/location/users/${userId}`, { params });
-            return response.data;
+            // Handle both array response and wrapped response
+            if (Array.isArray(response.data)) {
+                return response.data;
+            } else if (response.data?.locations && Array.isArray(response.data.locations)) {
+                return response.data.locations;
+            }
+            console.warn('Unexpected response format for getUserLocations:', response.data);
+            return [];
         } catch (error) {
             console.error(`Failed to fetch locations for user ${userId}:`, error);
             throw error;
@@ -210,6 +217,7 @@ export class BackendApiClient {
      * Get a specific user location by ID
      */
     async getUserLocationById(id: number): Promise<UserLocation> {
+        console.log(`Fetching user location by ID: ${id}`,this.client);
         try {
             const response = await this.client.get(`/admin/location/${id}`);
             return response.data;
@@ -235,7 +243,140 @@ export class BackendApiClient {
         const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`);
         return response.data;
     }
+
+    /**
+     * Get list of saved remedy PDFs for a consultation
+     */
+    async getSavedRemedyPDFs(consultationId: number): Promise<Array<{ id: number; name: string; date: string; file_url?: string }>> {
+        try {
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdfs`);
+            // Handle different response structures
+            if (response.data?.remedies) {
+                return response.data.remedies.map((remedy: any) => ({
+                    id: remedy.id,
+                    name: remedy.file_name || remedy.name || `remedy_${remedy.id}.pdf`,
+                    date: remedy.updated_at || remedy.created_at || new Date().toISOString(),
+                    file_url: remedy.file_url || `/admin/consultation/${consultationId}/remedy/pdf/${remedy.id}`
+                }));
+            } else if (Array.isArray(response.data)) {
+                return response.data.map((remedy: any) => ({
+                    id: remedy.id,
+                    name: remedy.file_name || remedy.name || `remedy_${remedy.id}.pdf`,
+                    date: remedy.updated_at || remedy.created_at || new Date().toISOString(),
+                    file_url: remedy.file_url || `/admin/consultation/${consultationId}/remedy/pdf/${remedy.id}`
+                }));
+            }
+            return [];
+        } catch (error) {
+            console.error(`Failed to fetch saved PDFs for consultation ${consultationId}:`, error);
+            // Return empty array if no PDFs found (404 is expected for consultations without saved PDFs)
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                return [];
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Download a remedy PDF file
+     */
+    async downloadRemedyPDF(consultationId: number, pdfId: number, fileName: string): Promise<void> {
+        try {
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf/${pdfId}`, {
+                responseType: 'blob'
+            });
+            
+            // Create blob URL and trigger download
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(`Failed to download PDF ${pdfId} for consultation ${consultationId}:`, error);
+            throw error;
+        }
+    }
+
+    // ==================== Location Map PDF Endpoints ====================
+
+    /**
+     * Upload a map PDF file directly to the database
+     */
+    async uploadMapPdf(userLocationId: number, file: File): Promise<{
+        id: number;
+        fileName: string;
+        fileSize: number;
+        mimeType: string;
+        createdAt: string;
+        updatedAt: string;
+    }> {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await this.client.post(`/location/user/${userLocationId}/map/upload`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to upload map PDF for location ${userLocationId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get all map PDFs for a user location
+     */
+    async getMapPdfs(userLocationId: number): Promise<Array<{
+        id: number;
+        fileName: string;
+        fileSize: number;
+        mimeType: string;
+        createdAt: string;
+        updatedAt: string;
+        downloadUrl: string;
+    }>> {
+        try {
+            const response = await this.client.get(`/location/user/${userLocationId}/maps`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to fetch map PDFs for location ${userLocationId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Download a map PDF file
+     */
+    async downloadMapPdf(userLocationId: number, mapId: number, fileName: string): Promise<void> {
+        try {
+            const response = await this.client.get(`/location/user/${userLocationId}/map/${mapId}`, {
+                responseType: 'blob'
+            });
+            
+            // Create blob URL and trigger download
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(`Failed to download map PDF ${mapId} for location ${userLocationId}:`, error);
+            throw error;
+        }
+    }
 }
 
-export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://localhost:3000');
+export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://13.235.0.135:3000');
 

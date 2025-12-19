@@ -34,7 +34,9 @@ import {
     Person,
     Save,
     Link,
-    EditCalendar
+    EditCalendar,
+    Download,
+    PictureAsPdf
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
 
@@ -50,6 +52,9 @@ const BookingDetails = () => {
         isSaving,
         saveRemedyData,
         updateStatus,
+        savedPDFs,
+        loadingPDFs,
+        downloadPDF,
         rescheduleState
     } = useBookingDetailsViewModel(id ? parseInt(id) : null);
 
@@ -286,69 +291,147 @@ const BookingDetails = () => {
 
                     {/* Remedy Form (Visible only if status is completed) */}
                     {booking.status?.toLowerCase() === 'completed' && (
-                        <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                            <CardContent sx={{ p: 3 }}>
-                                <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                    Remedy PDF Generator
-                                </Typography>
-                                <Grid container spacing={3}>
-                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Stack spacing={2}>
-                                            <TextField
-                                                label="Problems"
-                                                multiline rows={4}
-                                                value={remedyData.problems}
-                                                onChange={(e) => handleRemedyInputChange('problems', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Diagnosis"
-                                                multiline rows={4}
-                                                value={remedyData.diagnosis}
-                                                onChange={(e) => handleRemedyInputChange('diagnosis', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Suggestions"
-                                                multiline rows={4}
-                                                value={remedyData.suggestions}
-                                                onChange={(e) => handleRemedyInputChange('suggestions', e.target.value)}
-                                                fullWidth
-                                            />
-                                        </Stack>
+                        <>
+                            <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                        Remedy PDF Generator
+                                    </Typography>
+                                    <Grid container spacing={3}>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <Stack spacing={2}>
+                                                <TextField
+                                                    label="Problems"
+                                                    multiline rows={4}
+                                                    value={remedyData.problems}
+                                                    onChange={(e) => handleRemedyInputChange('problems', e.target.value)}
+                                                    fullWidth
+                                                />
+                                                <TextField
+                                                    label="Diagnosis"
+                                                    multiline rows={4}
+                                                    value={remedyData.diagnosis}
+                                                    onChange={(e) => handleRemedyInputChange('diagnosis', e.target.value)}
+                                                    fullWidth
+                                                />
+                                                <TextField
+                                                    label="Suggestions"
+                                                    multiline rows={4}
+                                                    value={remedyData.suggestions}
+                                                    onChange={(e) => handleRemedyInputChange('suggestions', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </Stack>
+                                        </Grid>
+                                        <Grid size={{ xs: 12, md: 6 }}>
+                                            <Stack spacing={2}>
+                                                <TextField
+                                                    label="Recommended Products"
+                                                    multiline rows={4}
+                                                    value={remedyData.products}
+                                                    onChange={(e) => handleRemedyInputChange('products', e.target.value)}
+                                                    fullWidth
+                                                />
+                                                <TextField
+                                                    label="Reminders"
+                                                    multiline rows={8}
+                                                    value={remedyData.reminders}
+                                                    onChange={(e) => handleRemedyInputChange('reminders', e.target.value)}
+                                                    fullWidth
+                                                />
+                                            </Stack>
+                                        </Grid>
                                     </Grid>
-                                    <Grid size={{ xs: 12, md: 6 }}>
-                                        <Stack spacing={2}>
-                                            <TextField
-                                                label="Recommended Products"
-                                                multiline rows={4}
-                                                value={remedyData.products}
-                                                onChange={(e) => handleRemedyInputChange('products', e.target.value)}
-                                                fullWidth
-                                            />
-                                            <TextField
-                                                label="Reminders"
-                                                multiline rows={8}
-                                                value={remedyData.reminders}
-                                                onChange={(e) => handleRemedyInputChange('reminders', e.target.value)}
-                                                fullWidth
-                                            />
-                                        </Stack>
-                                    </Grid>
-                                </Grid>
-                                <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
-                                        onClick={saveRemedyData}
-                                        disabled={isSaving}
-                                    >
-                                        {isSaving ? 'Saving...' : 'Save Remedy Data'}
-                                    </Button>
-                                </Box>
-                            </CardContent>
-                        </Card>
+                                    <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            startIcon={isSaving ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                                            onClick={saveRemedyData}
+                                            disabled={isSaving}
+                                        >
+                                            {isSaving ? 'Saving...' : 'Save Remedy Data'}
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+
+                            {/* Saved PDFs List */}
+                            <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
+                                <CardContent sx={{ p: 3 }}>
+                                    <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <PictureAsPdf color="error" />
+                                        Saved Remedy PDFs
+                                    </Typography>
+                                    
+                                    {loadingPDFs ? (
+                                        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                                            <CircularProgress size={24} />
+                                        </Box>
+                                    ) : savedPDFs.length === 0 ? (
+                                        <Alert severity="info" sx={{ mt: 2 }}>
+                                            No saved PDFs found. Save remedy data to generate PDFs.
+                                        </Alert>
+                                    ) : (
+                                        <List sx={{ mt: 2 }}>
+                                            {savedPDFs.map((pdf, index) => (
+                                                <React.Fragment key={pdf.id}>
+                                                    <ListItem
+                                                        disablePadding
+                                                        sx={{
+                                                            py: 1.5,
+                                                            px: 2,
+                                                            borderRadius: 1,
+                                                            '&:hover': {
+                                                                bgcolor: '#f5f5f5',
+                                                                cursor: 'pointer'
+                                                            }
+                                                        }}
+                                                        onClick={() => downloadPDF(pdf)}
+                                                    >
+                                                        <ListItemButton>
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                                                                <PictureAsPdf sx={{ color: '#dc2626', fontSize: 32 }} />
+                                                                <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                                    <Typography variant="subtitle1" fontWeight="600" noWrap>
+                                                                        {pdf.name}
+                                                                    </Typography>
+                                                                    <Typography variant="body2" color="text.secondary">
+                                                                        {new Date(pdf.date).toLocaleDateString(undefined, {
+                                                                            year: 'numeric',
+                                                                            month: 'long',
+                                                                            day: 'numeric',
+                                                                            hour: '2-digit',
+                                                                            minute: '2-digit'
+                                                                        })}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    size="small"
+                                                                    startIcon={<Download />}
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        downloadPDF(pdf);
+                                                                    }}
+                                                                    sx={{
+                                                                        ml: 'auto',
+                                                                        textTransform: 'none'
+                                                                    }}
+                                                                >
+                                                                    Download
+                                                                </Button>
+                                                            </Box>
+                                                        </ListItemButton>
+                                                    </ListItem>
+                                                    {index < savedPDFs.length - 1 && <Divider />}
+                                                </React.Fragment>
+                                            ))}
+                                        </List>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </>
                     )}
                 </Grid>
 

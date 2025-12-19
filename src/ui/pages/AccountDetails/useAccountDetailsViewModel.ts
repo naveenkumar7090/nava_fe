@@ -56,8 +56,14 @@ export const useAccountDetailsViewModel = (userId: number | null) => {
 
             // Handle Locations
             if (locationsResult.status === 'fulfilled') {
-                console.log('✅ Locations fetched:', locationsResult.value.length);
-                setLocations(locationsResult.value);
+                const value = locationsResult.value as any;
+                const locationsData = Array.isArray(value) 
+                    ? value 
+                    : (value?.locations && Array.isArray(value.locations)) 
+                        ? value.locations 
+                        : [];
+                console.log('✅ Locations fetched:', locationsData.length, locationsData);
+                setLocations(locationsData);
             } else {
                 console.warn('⚠️ Failed to fetch locations:', locationsResult.reason);
                 setLocations([]);
