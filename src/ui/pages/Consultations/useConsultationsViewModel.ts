@@ -27,7 +27,12 @@ export const useConsultationsViewModel = () => {
     // Transform booking data to consultation data format
     const transformBookingToConsultation = (booking: Booking, index: number): ConsultationData => {
         // Map status from API to our format
-        const getStatus = (apiStatus: string) => {
+        const getStatus = (apiStatus: string | undefined | null) => {
+            // Handle undefined/null status
+            if (!apiStatus) {
+                console.warn('Missing status for booking:', booking.bookingId);
+                return 'Scheduled'; // Default to Scheduled
+            }
             const normalizedStatus = apiStatus.toLowerCase();
 
             // Log for debugging
