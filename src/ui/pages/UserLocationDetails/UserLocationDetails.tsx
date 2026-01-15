@@ -99,22 +99,6 @@ const UserLocationDetails: React.FC = () => {
                         </Box>
                     </Box>
 
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Chip
-                            label={location.status}
-                            sx={{
-                                backgroundColor: location.status === 'mapped' ? '#dcfce7' : '#fef3c7',
-                                color: location.status === 'mapped' ? '#166534' : '#92400e',
-                                fontWeight: 600
-                            }}
-                        />
-                        <Chip
-                            label={`Score: ${location.vastuScore}`}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ fontWeight: 600 }}
-                        />
-                    </Box>
                 </Box>
             </Box>
 
