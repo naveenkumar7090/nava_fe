@@ -109,7 +109,7 @@ export const useConsultationsViewModel = () => {
             status: getStatus(booking.status),
             creationDate: booking.createdAt ? new Date(booking.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             bookingDateTime: booking.scheduledStartTime || booking.createdAt,
-            orderValue: 0, // Not available in current API
+            orderValue: (booking.price || 0) / 100,
             userId: booking.account.userId,
             profileId: booking.profile?.id ?? null,
             locationId: booking.location?.id ?? null,

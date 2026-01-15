@@ -54,5 +54,6 @@ export interface Booking {
     topicOfDiscussion: string | null;
     rating: number | null;
     meetingLink: string | null;
+    price: number | null;
     updatedAt: string;
 }
