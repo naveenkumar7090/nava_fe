@@ -27,13 +27,37 @@ import {
     LocationOn,
     Layers,
     ExpandMore,
-    CompassCalibration
+    CompassCalibration,
+    CloudUpload,
+    Download,
+    Description
 } from '@mui/icons-material';
+import { Button } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { useUserLocationDetailsViewModel } from './useUserLocationDetailsViewModel';
+
+const VisuallyHiddenInput = styled('input')({
+    clip: 'rect(0 0 0 0)',
+    clipPath: 'inset(50%)',
+    height: 1,
+    overflow: 'hidden',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    whiteSpace: 'nowrap',
+    width: 1,
+});
 
 const UserLocationDetails: React.FC = () => {
     const navigate = useNavigate();
-    const { location, loading, error } = useUserLocationDetailsViewModel();
+    const { location, loading, uploading, error, uploadReport, downloadMap } = useUserLocationDetailsViewModel();
+
+    const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            uploadReport(file);
+        }
+    };
 
     if (loading) {
         return (
@@ -123,6 +147,91 @@ const UserLocationDetails: React.FC = () => {
                     </Card>
                 </Grid>
             </Grid>
+
+            {/* Sitemap & Report Section */}
+            {location.scanningMethod === 'upload' && (
+                <>
+                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>
+                        Sitemap & Report
+                    </Typography>
+
+                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Card sx={{ borderRadius: 2, height: '100%', border: '1px solid #e5e7eb' }}>
+                                <CardContent>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                        <Description color="primary" />
+                                        <Typography variant="h6" fontWeight="600">User Sitemap</Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                        The sitemap uploaded by the user for this location.
+                                    </Typography>
+                                    {location.sitemap?.sitemapPdf ? (
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<Download />}
+                                            href={location.sitemap.sitemapPdf}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            fullWidth
+                                        >
+                                            Download Sitemap
+                                        </Button>
+                                    ) : (
+                                        <Alert severity="warning">No sitemap uploaded by user</Alert>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                            <Card sx={{ borderRadius: 2, height: '100%', border: '1px solid #e5e7eb' }}>
+                                <CardContent>
+                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                                        <CloudUpload color="primary" />
+                                        <Typography variant="h6" fontWeight="600">Vastu Report</Typography>
+                                    </Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                                        Upload a PDF report based on the sitemap provided above.
+                                    </Typography>
+
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                        {location.userLocationMap ? (
+                                            <Box sx={{ p: 2, backgroundColor: '#f0f9ff', borderRadius: 1, border: '1px solid #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                    <Description fontSize="small" sx={{ color: '#0369a1' }} />
+                                                    <Typography variant="body2" fontWeight="600" sx={{ color: '#0369a1' }}>
+                                                        Report PDF Uploaded
+                                                    </Typography>
+                                                </Box>
+                                                <Button
+                                                    size="small"
+                                                    startIcon={<Download />}
+                                                    onClick={() => downloadMap(location.userLocationMap!.id, `Report_${location.locationName}.pdf`)}
+                                                >
+                                                    View
+                                                </Button>
+                                            </Box>
+                                        ) : (
+                                            <Alert severity="info" sx={{ mb: 0 }}>No report uploaded yet.</Alert>
+                                        )}
+
+                                        <Button
+                                            component="label"
+                                            variant="contained"
+                                            startIcon={uploading ? <CircularProgress size={20} color="inherit" /> : <CloudUpload />}
+                                            disabled={uploading}
+                                            fullWidth
+                                        >
+                                            {uploading ? 'Uploading...' : location.userLocationMap ? 'Update Report' : 'Upload Report'}
+                                            <VisuallyHiddenInput type="file" accept="application/pdf" onChange={handleFileUpload} />
+                                        </Button>
+                                    </Box>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+                </>
+            )}
 
             {/* Floors Details */}
             <Typography variant="h5" fontWeight="bold" sx={{ mb: 3 }}>

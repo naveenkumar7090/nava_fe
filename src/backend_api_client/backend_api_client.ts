@@ -10,7 +10,8 @@ export class BackendApiClient {
     private client: AxiosInstance;
 
     // Defaulting to localhost:3000 as that is likely where the local backend is running
-    constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+    constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+        // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -217,7 +218,7 @@ export class BackendApiClient {
      * Get a specific user location by ID
      */
     async getUserLocationById(id: number): Promise<UserLocation> {
-        console.log(`Fetching user location by ID: ${id}`,this.client);
+        console.log(`Fetching user location by ID: ${id}`, this.client);
         try {
             const response = await this.client.get(`/admin/location/${id}`);
             return response.data;
@@ -285,7 +286,7 @@ export class BackendApiClient {
             const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf/${pdfId}`, {
                 responseType: 'blob'
             });
-            
+
             // Create blob URL and trigger download
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
@@ -319,7 +320,7 @@ export class BackendApiClient {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await this.client.post(`/location/user/${userLocationId}/map/upload`, formData, {
+            const response = await this.client.post(`/admin/location/${userLocationId}/map/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -344,7 +345,7 @@ export class BackendApiClient {
         downloadUrl: string;
     }>> {
         try {
-            const response = await this.client.get(`/location/user/${userLocationId}/maps`);
+            const response = await this.client.get(`/admin/location/${userLocationId}/maps`);
             return response.data;
         } catch (error) {
             console.error(`Failed to fetch map PDFs for location ${userLocationId}:`, error);
@@ -357,10 +358,10 @@ export class BackendApiClient {
      */
     async downloadMapPdf(userLocationId: number, mapId: number, fileName: string): Promise<void> {
         try {
-            const response = await this.client.get(`/location/user/${userLocationId}/map/${mapId}`, {
+            const response = await this.client.get(`/admin/location/${userLocationId}/map/${mapId}`, {
                 responseType: 'blob'
             });
-            
+
             // Create blob URL and trigger download
             const blob = new Blob([response.data], { type: 'application/pdf' });
             const url = window.URL.createObjectURL(blob);
@@ -378,5 +379,5 @@ export class BackendApiClient {
     }
 }
 
-export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://13.235.0.135:3000');
+export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://localhost:3000');
 
