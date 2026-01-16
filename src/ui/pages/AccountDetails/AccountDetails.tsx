@@ -434,7 +434,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
             <Home sx={{ color: '#1f2937' }} />
             <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
-              Vastu States
+              Vastu Locations
             </Typography>
           </Box>
 
@@ -536,7 +536,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
       <Card sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
         <CardContent sx={{ p: 3 }}>
           <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
-            Associated Profiles ({accountData.associatedProfiles.length})
+            Profiles ({accountData.associatedProfiles.length})
           </Typography>
 
           {accountData.associatedProfiles.length === 0 ? (
