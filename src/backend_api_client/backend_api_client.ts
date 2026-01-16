@@ -10,8 +10,8 @@ export class BackendApiClient {
     private client: AxiosInstance;
 
     // Defaulting to localhost:3000 as that is likely where the local backend is running
-    constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-        // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+    // constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+    constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -379,5 +379,5 @@ export class BackendApiClient {
     }
 }
 
-export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://localhost:3000');
+export const backendApiClient = new BackendApiClient();
 
