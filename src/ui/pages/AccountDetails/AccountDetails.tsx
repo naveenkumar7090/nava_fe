@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, JSX } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import {
@@ -427,6 +427,228 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
     );
   }
 
+  const renderUserLocationsArea = (): JSX.Element => {
+    return (
+      <Card sx={{ mb: 3, borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <CardContent sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+            <Home sx={{ color: '#1f2937' }} />
+            <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
+              Vastu States
+            </Typography>
+          </Box>
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {accountData.vastuStates.length === 0 ? (
+              <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+                No locations found for this user
+              </Typography>
+            ) : (
+              accountData.vastuStates.map((location: any, index: number) => (
+                <Accordion
+                  key={index}
+                  sx={{
+                    boxShadow: 'none',
+                    border: '1px solid #e5e7eb',
+                    '&:before': { display: 'none' },
+                    borderRadius: '8px !important'
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    sx={{
+                      minHeight: 48,
+                      '& .MuiAccordionSummary-content': {
+                        margin: '8px 0'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
+                      <Description sx={{ fontSize: 20, color: '#6b7280' }} />
+                      <Typography variant="body1" fontWeight="500">
+                        {typeof location === 'string' ? location : location.name}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    {typeof location === 'object' && location.name ? (
+                      <Box sx={{ display: 'grid', gap: 1.5 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" color="text.secondary">Location Name:</Typography>
+                          <Typography variant="body2" fontWeight="500">{location.name}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" color="text.secondary">Building Type:</Typography>
+                          <Typography variant="body2" fontWeight="500" sx={{ textTransform: 'capitalize' }}>{location.buildingType}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="body2" color="text.secondary">No. of Floors:</Typography>
+                          <Typography variant="body2" fontWeight="500">{location.floorCount}</Typography>
+                        </Box>
+
+                        {location.data && location.data.space && Array.isArray(location.data.space) && (
+                          <Box>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Spaces:</Typography>
+                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                              {location.data.space.map((space: any, idx: number) => (
+                                <Chip
+                                  key={idx}
+                                  label={space.name}
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: '#f3f4f6',
+                                    color: '#374151',
+                                    fontWeight: 500
+                                  }}
+                                />
+                              ))}
+                            </Box>
+                          </Box>
+                        )}
+
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => navigate(`/user-location/${location.id}`)}
+                          >
+                            View Details
+                          </Button>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        {typeof location === 'string' ? `Details for ${location} would be displayed here.` : 'No location details available.'}
+                      </Typography>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              ))
+            )}
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  const renderUserProfilesArea = (): JSX.Element => {
+    return (
+      <Card sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <CardContent sx={{ p: 3 }}>
+          <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
+            Associated Profiles ({accountData.associatedProfiles.length})
+          </Typography>
+
+          {accountData.associatedProfiles.length === 0 ? (
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
+              No associated profiles found
+            </Typography>
+          ) : (
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {accountData.associatedProfiles.map((profile, index) => (
+                <Accordion
+                  key={profile.id || index}
+                  sx={{
+                    boxShadow: 'none',
+                    border: '1px solid #e5e7eb',
+                    '&:before': { display: 'none' },
+                    borderRadius: '8px !important'
+                  }}
+                >
+                  <AccordionSummary
+                    expandIcon={<ExpandMore />}
+                    sx={{
+                      minHeight: 48,
+                      '& .MuiAccordionSummary-content': {
+                        margin: '8px 0',
+                        alignItems: 'center'
+                      }
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                      <Avatar
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          fontSize: '0.875rem',
+                          fontWeight: 'bold',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: 'white'
+                        }}
+                      >
+                        {profile.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="body1" fontWeight="500">
+                          {profile.name}
+                        </Typography>
+                      </Box>
+                      {profile.relation && (
+                        <Chip
+                          label={profile.relation}
+                          size="small"
+                          sx={{
+                            backgroundColor: profile.relation === 'Default' ? '#dcfce7' : '#dbeafe',
+                            color: profile.relation === 'Default' ? '#166534' : '#1e40af',
+                            fontWeight: 500
+                          }}
+                        />
+                      )}
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={{ pt: 0 }}>
+                    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Date of Birth
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {profile.dateOfBirth}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Gender
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500" sx={{ textTransform: 'capitalize' }}>
+                          {profile.gender}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Sun Sign
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {profile.sunSign}
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Moon Sign
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {profile.moonSign}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                          Place of Birth
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {profile.placeOfBirth}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+    );
+  };
+
   return (
     <Box sx={{ p: 3, backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
       {/* Header with Back Button */}
@@ -447,18 +669,6 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         <Typography variant="h4" fontWeight="bold" sx={{ color: '#1f2937' }}>
           Account Details
         </Typography>
-        <Typography variant="h6" sx={{ color: '#2563eb', ml: 2 }}>
-          {accountData.name}
-        </Typography>
-        {/* Show API data indicator */}
-        {account && (
-          <Chip
-            label="Live Data"
-            size="small"
-            color="success"
-            sx={{ ml: 2 }}
-          />
-        )}
       </Box>
 
       <Box sx={{ display: 'flex', gap: 3, flexDirection: { xs: 'column', lg: 'row' } }}>
@@ -515,15 +725,6 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               </Typography>
 
               <Box sx={{ display: 'grid', gap: 2 }}>
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Account Name
-                  </Typography>
-                  <Typography variant="body1" fontWeight="500">
-                    {accountData.accountName}
-                  </Typography>
-                </Box>
-
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Place of Birth
@@ -607,386 +808,12 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               </Box>
             </CardContent>
           </Card>
-
-          {/* Associated Profiles */}
-          <Card sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
-                Associated Profiles ({accountData.associatedProfiles.length})
-              </Typography>
-
-              {accountData.associatedProfiles.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-                  No associated profiles found
-                </Typography>
-              ) : (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                  {accountData.associatedProfiles.map((profile, index) => (
-                    <Accordion
-                      key={profile.id || index}
-                      sx={{
-                        boxShadow: 'none',
-                        border: '1px solid #e5e7eb',
-                        '&:before': { display: 'none' },
-                        borderRadius: '8px !important'
-                      }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMore />}
-                        sx={{
-                          minHeight: 48,
-                          '& .MuiAccordionSummary-content': {
-                            margin: '8px 0',
-                            alignItems: 'center'
-                          }
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                          <Avatar
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              fontSize: '0.875rem',
-                              fontWeight: 'bold',
-                              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                              color: 'white'
-                            }}
-                          >
-                            {profile.name.charAt(0).toUpperCase()}
-                          </Avatar>
-                          <Box sx={{ flex: 1 }}>
-                            <Typography variant="body1" fontWeight="500">
-                              {profile.name}
-                            </Typography>
-                          </Box>
-                          {profile.relation && (
-                            <Chip
-                              label={profile.relation}
-                              size="small"
-                              sx={{
-                                backgroundColor: profile.relation === 'Default' ? '#dcfce7' : '#dbeafe',
-                                color: profile.relation === 'Default' ? '#166534' : '#1e40af',
-                                fontWeight: 500
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ pt: 0 }}>
-                        <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                              Date of Birth
-                            </Typography>
-                            <Typography variant="body2" fontWeight="500">
-                              {profile.dateOfBirth}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                              Gender
-                            </Typography>
-                            <Typography variant="body2" fontWeight="500" sx={{ textTransform: 'capitalize' }}>
-                              {profile.gender}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                              Sun Sign
-                            </Typography>
-                            <Typography variant="body2" fontWeight="500">
-                              {profile.sunSign}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                              Moon Sign
-                            </Typography>
-                            <Typography variant="body2" fontWeight="500">
-                              {profile.moonSign}
-                            </Typography>
-                          </Box>
-                          <Box sx={{ gridColumn: { xs: '1', sm: '1 / -1' } }}>
-                            <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                              Place of Birth
-                            </Typography>
-                            <Typography variant="body2" fontWeight="500">
-                              {profile.placeOfBirth}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </AccordionDetails>
-                    </Accordion>
-                  ))}
-                </Box>
-              )}
-            </CardContent>
-          </Card>
         </Box>
 
         {/* Right Column */}
         <Box sx={{ flex: 1 }}>
-          {/* Activity Section */}
-          <Card sx={{ mb: 3, borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
-                Activity
-              </Typography>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {accountData.activity.map((activity, index) => (
-                  <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                    <Box
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        backgroundColor: '#3b82f6',
-                        mt: 1,
-                        flexShrink: 0
-                      }}
-                    />
-                    <Box sx={{ flex: 1 }}>
-                      <Typography variant="body1" fontWeight="500" sx={{ mb: 0.5 }}>
-                        {activity.description}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {activity.date}
-                        {activity.by && (
-                          <>
-                            {' by '}
-                            <Typography component="span" sx={{ color: '#2563eb', fontWeight: 500 }}>
-                              {activity.by}
-                            </Typography>
-                          </>
-                        )}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Box>
-
-              <Button
-                sx={{
-                  mt: 2,
-                  color: '#2563eb',
-                  textTransform: 'none',
-                  fontWeight: 500
-                }}
-              >
-                Show less
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Vastu States */}
-          <Card sx={{ mb: 3, borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <Home sx={{ color: '#1f2937' }} />
-                <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
-                  Vastu States
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                {accountData.vastuStates.length === 0 ? (
-                  <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
-                    No locations found for this user
-                  </Typography>
-                ) : (
-                  accountData.vastuStates.map((location: any, index: number) => (
-                    <Accordion
-                      key={index}
-                      sx={{
-                        boxShadow: 'none',
-                        border: '1px solid #e5e7eb',
-                        '&:before': { display: 'none' },
-                        borderRadius: '8px !important'
-                      }}
-                    >
-                      <AccordionSummary
-                        expandIcon={<ExpandMore />}
-                        sx={{
-                          minHeight: 48,
-                          '& .MuiAccordionSummary-content': {
-                            margin: '8px 0'
-                          }
-                        }}
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                          <Description sx={{ fontSize: 20, color: '#6b7280' }} />
-                          <Typography variant="body1" fontWeight="500">
-                            {typeof location === 'string' ? location : location.name}
-                          </Typography>
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails sx={{ pt: 0 }}>
-                        {typeof location === 'object' && location.name ? (
-                          <Box sx={{ display: 'grid', gap: 1.5 }}>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="body2" color="text.secondary">Location Name:</Typography>
-                              <Typography variant="body2" fontWeight="500">{location.name}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="body2" color="text.secondary">Building Type:</Typography>
-                              <Typography variant="body2" fontWeight="500" sx={{ textTransform: 'capitalize' }}>{location.buildingType}</Typography>
-                            </Box>
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                              <Typography variant="body2" color="text.secondary">No. of Floors:</Typography>
-                              <Typography variant="body2" fontWeight="500">{location.floorCount}</Typography>
-                            </Box>
-
-                            {location.data && location.data.space && Array.isArray(location.data.space) && (
-                              <Box>
-                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Spaces:</Typography>
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                  {location.data.space.map((space: any, idx: number) => (
-                                    <Chip
-                                      key={idx}
-                                      label={space.name}
-                                      size="small"
-                                      sx={{
-                                        backgroundColor: '#f3f4f6',
-                                        color: '#374151',
-                                        fontWeight: 500
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                              </Box>
-                            )}
-
-                            <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-                              <Button
-                                size="small"
-                                variant="outlined"
-                                onClick={() => navigate(`/user-location/${location.id}`)}
-                              >
-                                View Details
-                              </Button>
-                            </Box>
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            {typeof location === 'string' ? `Details for ${location} would be displayed here.` : 'No location details available.'}
-                          </Typography>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  ))
-                )}
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Legacy Vastu Maps */}
-          <Card sx={{ borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-            <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Business sx={{ color: '#1f2937' }} />
-                  <Typography variant="h6" fontWeight="600" sx={{ color: '#1f2937' }}>
-                    Legacy Vastu Maps
-                  </Typography>
-                </Box>
-                <Button
-                  variant="contained"
-                  startIcon={<Upload />}
-                  onClick={handleUploadClick}
-                  disabled={uploading || !locations || locations.length === 0}
-                  title={!locations || locations.length === 0 ? 'No locations found. Please create a location first.' : ''}
-                  sx={{
-                    textTransform: 'none',
-                    backgroundColor: '#2563eb',
-                    '&:hover': {
-                      backgroundColor: '#1d4ed8'
-                    },
-                    '&:disabled': {
-                      backgroundColor: '#9ca3af'
-                    }
-                  }}
-                >
-                  {uploading ? 'Uploading...' : 'Upload PDF'}
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf,application/pdf"
-                  multiple
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-              </Box>
-
-              {!locations || locations.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <PictureAsPdf sx={{ fontSize: 60, color: '#d1d5db', mb: 2 }} />
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    No locations found for this user.
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.875rem' }}>
-                    Please create a location first before uploading maps.
-                  </Typography>
-                </Box>
-              ) : uploadedMaps.length === 0 ? (
-                <Box sx={{ textAlign: 'center', py: 4 }}>
-                  <PictureAsPdf sx={{ fontSize: 60, color: '#d1d5db', mb: 2 }} />
-                  <Typography variant="body2" color="text.secondary">
-                    No maps uploaded yet. Click "Upload PDF" to add a map.
-                  </Typography>
-                </Box>
-              ) : (
-                <Box sx={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-                  gap: 2
-                }}>
-                  {uploadedMaps.map((map, index) => (
-                    <Paper
-                      key={index}
-                      onClick={() => handleMapClick(map)}
-                      sx={{
-                        p: 2,
-                        textAlign: 'center',
-                        cursor: 'pointer',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: 2,
-                        transition: 'all 0.2s',
-                        '&:hover': {
-                          backgroundColor: '#f8f9fa',
-                          borderColor: '#2563eb',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                        }
-                      }}
-                    >
-                      {map.type === 'pdf' ? (
-                        <PictureAsPdf sx={{ fontSize: 40, color: '#dc2626', mb: 1 }} />
-                      ) : (
-                        <Description sx={{ fontSize: 40, color: '#6b7280', mb: 1 }} />
-                      )}
-                      <Typography variant="body2" fontWeight="500" sx={{ 
-                        wordBreak: 'break-word',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical'
-                      }}>
-                        {map.name}
-                      </Typography>
-                      {map.file && (
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                          New
-                        </Typography>
-                      )}
-                    </Paper>
-                  ))}
-                </Box>
-              )}
-            </CardContent>
-          </Card>
+          {renderUserLocationsArea()}
+          {renderUserProfilesArea()}
         </Box>
       </Box>
     </Box>
