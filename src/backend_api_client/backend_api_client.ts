@@ -22,20 +22,16 @@ export class BackendApiClient {
 
     // ==================== Consultation Endpoints ====================
 
-    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string, profileId?: number): Promise<{ bookings: Booking[], next: number }> {
-        const params: any = { limit, next };
-        if (staffId) {
-            params.staffId = staffId;
-        }
-        if (profileId) {
-            params.profileId = profileId;
-        }
-
+    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string, profileId?: number, locationId?: number): Promise<{ bookings: Booking[], next: number }> {
         try {
-            const response = await this.client.get('/admin/consultation/bookings', { params });
+            let url = `/admin/consultation/bookings?limit=${limit}&next=${next}`;
+            if (staffId) url += `&staffId=${staffId}`;
+            if (profileId) url += `&profileId=${profileId}`;
+            if (locationId) url += `&locationId=${locationId}`;
+            const response = await this.client.get(url);
             return response.data;
         } catch (error) {
-            console.error("Failed to fetch bookings:", error);
+            console.error("Failed to fetch admin bookings:", error);
             throw error;
         }
     }
