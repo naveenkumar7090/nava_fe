@@ -51,10 +51,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   } = useAccountDetailsViewModel(userIdNumber);
 
   // State for uploaded maps
-  const [uploadedMaps, setUploadedMaps] = useState<Array<{ 
+  const [uploadedMaps, setUploadedMaps] = useState<Array<{
     id?: number;
-    name: string; 
-    type: string; 
+    name: string;
+    type: string;
     file?: File;
     downloadUrl?: string;
     createdAt?: string;
@@ -106,7 +106,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
       for (const file of pdfFiles) {
         try {
           const result = await apiClient.uploadMapPdf(userLocationId, file);
-          
+
           // Add to local state
           setUploadedMaps(prev => [...prev, {
             id: result.id,
@@ -146,10 +146,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
     console.log('Fetching maps for locations:', locations.map(l => ({ id: l.id, name: l.locationName })));
 
     try {
-      const allMaps: Array<{ 
+      const allMaps: Array<{
         id?: number;
-        name: string; 
-        type: string; 
+        name: string;
+        type: string;
         fileUrl?: string;
         createdAt?: string;
       }> = [];
@@ -187,7 +187,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
       locations: locations,
       loading: loading
     });
-    
+
     if (!loading && locations && locations.length > 0) {
       console.log('✅ Fetching maps for', locations.length, 'locations');
       fetchMapsForLocations();
@@ -638,6 +638,15 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                           {profile.placeOfBirth}
                         </Typography>
                       </Box>
+                    </Box>
+                    <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => navigate(`/user-profiles/${userId}/${profile.id}`)}
+                      >
+                        View Profile
+                      </Button>
                     </Box>
                   </AccordionDetails>
                 </Accordion>

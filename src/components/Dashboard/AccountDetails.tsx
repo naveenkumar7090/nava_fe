@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
-  Typography,  
+  Typography,
   Button,
   Card,
   CardContent,
   Avatar,
-  Chip,  
+  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -32,7 +32,7 @@ import { useBookings } from './Dashboard';
 import { fetchUserProfiles, fetchAccountUserById, AccountUser, UserProfile } from '../../services/apiService';
 import axios from 'axios';
 
-interface AccountDetailsProps {}
+interface AccountDetailsProps { }
 
 const AccountDetails: React.FC<AccountDetailsProps> = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -70,7 +70,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
 
         // Parse user_id from route parameter
         const userIdNumber = parseInt(userId, 10);
-        
+
         if (isNaN(userIdNumber)) {
           setError('Invalid user ID');
           setLoading(false);
@@ -80,10 +80,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         // Fetch account user data by ID from external API
         console.log('🔍 Fetching account user data for user ID:', userIdNumber);
         const user = await fetchAccountUserById(userIdNumber);
-        
+
         if (user) {
           setAccountUser(user);
-          
+
           // Fetch associated profiles if user ID is available
           console.log('👥 Fetching user profiles for user ID:', user.id);
           const profiles = await fetchUserProfiles(user.id);
@@ -99,7 +99,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         try {
           console.log('🔍 All bookings in context:', bookings.length);
           console.log('🔍 Looking for user ID:', userIdNumber);
-          
+
           // Extract all booking_ids from context
           const allBookingIds = bookings
             .map((b: any) => b.booking_id)
@@ -109,7 +109,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
 
           if (allBookingIds.length > 0) {
             console.log('📍 Fetching booking details for all bookings to find locations for user:', userIdNumber);
-            
+
             // Fetch booking details for all bookings - this response includes location data and user_id
             const detailsResponse = await axios.post('/bookings/details', {
               booking_ids: allBookingIds
@@ -120,12 +120,12 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
             // Filter bookings by user_id from the details response, then extract locations
             if (detailsResponse.data?.data?.bookings && Array.isArray(detailsResponse.data.data.bookings)) {
               console.log('📦 Processing', detailsResponse.data.data.bookings.length, 'booking details');
-              
+
               // Filter bookings for this user
               const userBookings = detailsResponse.data.data.bookings.filter((booking: any) => {
-                const bookingUserId = booking.user_id || 
-                                     (booking.user && booking.user.id) ||
-                                     null;
+                const bookingUserId = booking.user_id ||
+                  (booking.user && booking.user.id) ||
+                  null;
                 const matches = bookingUserId === userIdNumber;
                 if (matches) {
                   console.log('✅ Found matching booking:', booking.booking_id, 'user_id:', bookingUserId);
@@ -134,10 +134,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               });
 
               console.log('📊 Found', userBookings.length, 'bookings for user ID:', userIdNumber);
-              
+
               // Extract unique locations from user's bookings
               const locationsMap = new Map();
-              
+
               userBookings.forEach((booking: any, index: number) => {
                 console.log(`📦 User Booking ${index + 1}:`, {
                   booking_id: booking.booking_id,
@@ -145,13 +145,13 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   has_location: !!booking.location,
                   location: booking.location
                 });
-                
+
                 // Check for location object (from location table)
                 if (booking.location && booking.location.name) {
                   const locationId = booking.location.id || booking.location.name;
-                  
+
                   console.log('✅ Found location:', booking.location.name, 'ID:', locationId);
-                  
+
                   // Only add if not already in map (to avoid duplicates)
                   if (!locationsMap.has(locationId)) {
                     locationsMap.set(locationId, {
@@ -220,10 +220,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   const formatTime = (timeString: string) => {
     try {
       const date = new Date(timeString);
-      return date.toLocaleTimeString('en-US', { 
-        hour: '2-digit', 
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
         minute: '2-digit',
-        hour12: true 
+        hour12: true
       });
     } catch {
       return timeString;
@@ -266,14 +266,14 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         // Use location data - show location names from location table
         vastuStates: userLocations.length > 0
           ? userLocations
-              .filter((loc: any) => loc.name) // Only show if location name exists
-              .map((loc: any) => ({
-                name: loc.name, // Use location.name from location table
-                short_name: loc.short_name || loc.name,
-                id: loc.id,
-                image: loc.image,
-                data: loc.data
-              }))
+            .filter((loc: any) => loc.name) // Only show if location name exists
+            .map((loc: any) => ({
+              name: loc.name, // Use location.name from location table
+              short_name: loc.short_name || loc.name,
+              id: loc.id,
+              image: loc.image,
+              data: loc.data
+            }))
           : [],
         activity: [
           {
@@ -327,7 +327,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           <Button
             startIcon={<ArrowBack />}
             onClick={handleBackClick}
-            sx={{ 
+            sx={{
               mr: 2,
               color: '#6b7280',
               '&:hover': {
@@ -361,7 +361,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           <Button
             startIcon={<ArrowBack />}
             onClick={handleBackClick}
-            sx={{ 
+            sx={{
               mr: 2,
               color: '#6b7280',
               '&:hover': {
@@ -375,13 +375,13 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
             Account Details
           </Typography>
         </Box>
-        <Alert 
-          severity="error" 
+        <Alert
+          severity="error"
           sx={{ mb: 3 }}
           action={
-            <Button 
-              color="inherit" 
-              size="small" 
+            <Button
+              color="inherit"
+              size="small"
               onClick={() => window.location.reload()}
             >
               Retry
@@ -401,7 +401,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         <Button
           startIcon={<ArrowBack />}
           onClick={handleBackClick}
-          sx={{ 
+          sx={{
             mr: 2,
             color: '#6b7280',
             '&:hover': {
@@ -419,10 +419,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         </Typography>
         {/* Show API data indicator */}
         {accountUser && (
-          <Chip 
-            label="Live Data" 
-            size="small" 
-            color="success" 
+          <Chip
+            label="Live Data"
+            size="small"
+            color="success"
             sx={{ ml: 2 }}
           />
         )}
@@ -434,7 +434,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           {/* Profile Card */}
           <Card sx={{ mb: 3, borderRadius: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ 
+              <Box sx={{
                 background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
                 borderRadius: 2,
                 p: 3,
@@ -480,7 +480,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
                 Summary
               </Typography>
-              
+
               <Box sx={{ display: 'grid', gap: 2 }}>
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
@@ -490,7 +490,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.accountName}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Place of Birth
@@ -499,7 +499,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.placeOfBirth}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     DOB
@@ -508,7 +508,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.dob}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     TOB
@@ -517,7 +517,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.tob}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Sun Sign
@@ -526,7 +526,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.sunSign}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Moon Sign
@@ -535,7 +535,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.moonSign}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Email
@@ -544,7 +544,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.email}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Phone
@@ -553,7 +553,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.phone}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Address
@@ -562,7 +562,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.address}
                   </Typography>
                 </Box>
-                
+
                 <Box>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
                     Gender
@@ -581,7 +581,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
                 Associated Profiles ({accountData.associatedProfiles.length})
               </Typography>
-              
+
               {accountData.associatedProfiles.length === 0 ? (
                 <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
                   No associated profiles found
@@ -589,9 +589,9 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                   {accountData.associatedProfiles.map((profile, index) => (
-                    <Accordion 
+                    <Accordion
                       key={profile.id || index}
-                      sx={{ 
+                      sx={{
                         boxShadow: 'none',
                         border: '1px solid #e5e7eb',
                         '&:before': { display: 'none' },
@@ -600,7 +600,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     >
                       <AccordionSummary
                         expandIcon={<ExpandMore />}
-                        sx={{ 
+                        sx={{
                           minHeight: 48,
                           '& .MuiAccordionSummary-content': {
                             margin: '8px 0',
@@ -626,7 +626,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                               {profile.name}
                             </Typography>
                           </Box>
-                          <Chip 
+                          <Chip
                             label={profile.relation}
                             size="small"
                             sx={{
@@ -680,6 +680,15 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                             </Typography>
                           </Box>
                         </Box>
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            onClick={() => navigate(`/user-profiles/${userId}/${profile.id}`)}
+                          >
+                            View Profile
+                          </Button>
+                        </Box>
                       </AccordionDetails>
                     </Accordion>
                   ))}
@@ -697,7 +706,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
               <Typography variant="h6" fontWeight="600" sx={{ mb: 2, color: '#1f2937' }}>
                 Activity
               </Typography>
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {accountData.activity.map((activity, index) => (
                   <Box key={index} sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
@@ -730,10 +739,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   </Box>
                 ))}
               </Box>
-              
-              <Button 
-                sx={{ 
-                  mt: 2, 
+
+              <Button
+                sx={{
+                  mt: 2,
                   color: '#2563eb',
                   textTransform: 'none',
                   fontWeight: 500
@@ -753,7 +762,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   Vastu States
                 </Typography>
               </Box>
-              
+
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {accountData.vastuStates.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
@@ -761,9 +770,9 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   </Typography>
                 ) : (
                   accountData.vastuStates.map((location: any, index: number) => (
-                    <Accordion 
+                    <Accordion
                       key={index}
-                      sx={{ 
+                      sx={{
                         boxShadow: 'none',
                         border: '1px solid #e5e7eb',
                         '&:before': { display: 'none' },
@@ -772,7 +781,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     >
                       <AccordionSummary
                         expandIcon={<ExpandMore />}
-                        sx={{ 
+                        sx={{
                           minHeight: 48,
                           '& .MuiAccordionSummary-content': {
                             margin: '8px 0'
@@ -804,11 +813,11 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>Spaces:</Typography>
                                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                                   {location.data.space.map((space: any, idx: number) => (
-                                    <Chip 
+                                    <Chip
                                       key={idx}
                                       label={space.name}
                                       size="small"
-                                      sx={{ 
+                                      sx={{
                                         backgroundColor: '#f3f4f6',
                                         color: '#374151',
                                         fontWeight: 500
@@ -841,11 +850,11 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   Legacy Vastu Maps
                 </Typography>
               </Box>
-              
-              <Box sx={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', 
-                gap: 2 
+
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
+                gap: 2
               }}>
                 {accountData.legacyMaps.map((map, index) => (
                   <Paper
