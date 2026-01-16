@@ -246,6 +246,14 @@ export class BackendApiClient {
     }
 
     /**
+     * Get remedy JSON data for a consultation
+     */
+    async getRemedyData(consultationId: number): Promise<RemedyData> {
+        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy`);
+        return response.data;
+    }
+
+    /**
      * Get list of saved remedy PDFs for a consultation
      */
     async getSavedRemedyPDFs(consultationId: number): Promise<Array<{ id: number; name: string; date: string; file_url?: string }>> {

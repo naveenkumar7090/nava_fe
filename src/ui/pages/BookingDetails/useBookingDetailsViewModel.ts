@@ -18,7 +18,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         reminders: '',
     });
     const [isSaving, setIsSaving] = useState(false);
-    
+
     // Saved PDFs State
     const [savedPDFs, setSavedPDFs] = useState<Array<{ id: number; name: string; date: string; file_url?: string }>>([]);
     const [loadingPDFs, setLoadingPDFs] = useState(false);
@@ -40,7 +40,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
 
                 // Fetch existing remedy data
                 try {
-                    const existingRemedy = await apiClient.getRemedyPDF(bookingId);
+                    const existingRemedy = await apiClient.getRemedyData(bookingId);
                     if (existingRemedy) {
                         setRemedyData(prev => ({
                             ...prev,
@@ -99,7 +99,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         try {
             await apiClient.updateRemedyData(bookingId, remedyData);
             alert('Remedy data saved successfully!');
-            
+
             // Refresh saved PDFs list after saving
             try {
                 const pdfs = await apiClient.getSavedRemedyPDFs(bookingId);
@@ -131,12 +131,12 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         try {
             // Create new PDF document
             const doc = new jsPDF();
-            
+
             // Set font and title
             doc.setFontSize(20);
             doc.setFont('helvetica', 'bold');
             doc.text('Remedy Report', 20, 30);
-            
+
             let yPosition = 50;
 
             // Booking Information Section
@@ -144,7 +144,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
             doc.setFont('helvetica', 'bold');
             doc.text('Booking Information', 20, yPosition);
             yPosition += 10;
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
             doc.text(`Booking ID: ${booking.bookingId}`, 20, yPosition);
@@ -172,7 +172,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
             doc.setFont('helvetica', 'bold');
             doc.text('Customer Information', 20, yPosition);
             yPosition += 10;
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
             doc.text(`Name: ${booking.account?.name || 'N/A'}`, 20, yPosition);
@@ -188,7 +188,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 doc.setFont('helvetica', 'bold');
                 doc.text('Astro Profile Information', 20, yPosition);
                 yPosition += 10;
-                
+
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Profile Name: ${booking.profile.name || 'N/A'}`, 20, yPosition);
@@ -231,7 +231,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 doc.setFont('helvetica', 'bold');
                 doc.text('Vastu Location Information', 20, yPosition);
                 yPosition += 10;
-                
+
                 doc.setFontSize(12);
                 doc.setFont('helvetica', 'normal');
                 doc.text(`Location Name: ${booking.location.name || 'N/A'}`, 20, yPosition);
@@ -249,10 +249,10 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
             doc.setFont('helvetica', 'bold');
             doc.text('Remedy Information', 20, yPosition);
             yPosition += 15;
-            
+
             doc.setFontSize(12);
             doc.setFont('helvetica', 'normal');
-            
+
             // Problems section
             if (remedyData.problems) {
                 doc.setFont('helvetica', 'bold');
@@ -262,14 +262,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 const problemsLines = doc.splitTextToSize(remedyData.problems, 170);
                 doc.text(problemsLines, 20, yPosition);
                 yPosition += problemsLines.length * 6 + 10;
-                
+
                 // Check if we need a new page
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
                 }
             }
-            
+
             // Diagnosis section
             if (remedyData.diagnosis) {
                 doc.setFont('helvetica', 'bold');
@@ -279,14 +279,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 const diagnosisLines = doc.splitTextToSize(remedyData.diagnosis, 170);
                 doc.text(diagnosisLines, 20, yPosition);
                 yPosition += diagnosisLines.length * 6 + 10;
-                
+
                 // Check if we need a new page
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
                 }
             }
-            
+
             // Suggestions section
             if (remedyData.suggestions) {
                 doc.setFont('helvetica', 'bold');
@@ -296,14 +296,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 const suggestionsLines = doc.splitTextToSize(remedyData.suggestions, 170);
                 doc.text(suggestionsLines, 20, yPosition);
                 yPosition += suggestionsLines.length * 6 + 10;
-                
+
                 // Check if we need a new page
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
                 }
             }
-            
+
             // Products section
             if (remedyData.products) {
                 doc.setFont('helvetica', 'bold');
@@ -313,14 +313,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 const productsLines = doc.splitTextToSize(remedyData.products, 170);
                 doc.text(productsLines, 20, yPosition);
                 yPosition += productsLines.length * 6 + 10;
-                
+
                 // Check if we need a new page
                 if (yPosition > 250) {
                     doc.addPage();
                     yPosition = 30;
                 }
             }
-            
+
             // Reminders section
             if (remedyData.reminders) {
                 doc.setFont('helvetica', 'bold');
@@ -330,7 +330,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 const remindersLines = doc.splitTextToSize(remedyData.reminders, 170);
                 doc.text(remindersLines, 20, yPosition);
             }
-            
+
             // Add footer with date
             const currentDate = new Date().toLocaleDateString('en-US', {
                 year: 'numeric',
@@ -340,14 +340,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
             doc.setFontSize(10);
             doc.setFont('helvetica', 'italic');
             doc.text(`Generated on: ${currentDate}`, 20, doc.internal.pageSize.height - 20);
-            
+
             // Generate filename
             const customerName = booking.account?.name?.replace(/\s+/g, '_') || 'customer';
             const fileName = `remedy_${customerName}_${booking.bookingId}_${new Date().toISOString().split('T')[0]}.pdf`;
-            
+
             // Download the PDF
             doc.save(fileName);
-            
+
         } catch (error) {
             console.error('❌ Error generating PDF:', error);
             alert('Error generating PDF. Please try again.');
@@ -357,8 +357,22 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
     const downloadPDF = async (pdf: { id: number; name: string; date: string; file_url?: string }) => {
         if (!bookingId || !booking) return;
 
-        // Generate and download PDF with current remedy data and user info
-        generateAndDownloadPDF();
+        try {
+            const downloadUrl = pdf.file_url || `/admin/consultation/${bookingId}/remedy/pdf`;
+
+            // BackendApiClient instance has baseURL
+            // @ts-ignore - baseURL is private/protected but we need it here for building the full URL
+            const baseUrl = apiClient['baseURL'] || 'http://localhost:3000';
+            const fullUrl = downloadUrl.startsWith('http')
+                ? downloadUrl
+                : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
+
+            // Open in a new tab for viewing instead of direct download
+            window.open(fullUrl, '_blank');
+        } catch (error) {
+            console.error('❌ Error viewing PDF:', error);
+            alert('Failed to view PDF. Please try again.');
+        }
     };
 
     const updateStatus = async (status: 'completed' | 'cancel' | 'noshow') => {
