@@ -57,3 +57,24 @@ export interface Booking {
     price: number | null;
     updatedAt: string;
 }
+
+export enum BookingStatus {
+    upcoming = "upcoming",
+    ongoing = "ongoing",
+    yet_to_mark = "yet_to_mark",
+    cancelled = "cancelled",
+    completed = "completed",
+    no_show = "no_show",
+}
+
+function isBookingStatus(value: string): value is BookingStatus {
+    return Object.values(BookingStatus).includes(value as BookingStatus); 
+}
+
+export function parseBookingStatus(value: string): BookingStatus {
+    if (!isBookingStatus(value)) {
+        throw new Error(`Cannot parse ${value} to booking status`);
+    }
+
+    return value as BookingStatus;
+}

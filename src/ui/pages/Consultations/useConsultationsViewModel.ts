@@ -47,16 +47,14 @@ export const useConsultationsViewModel = () => {
             switch (normalizedStatus) {
                 case 'completed':
                     return 'Completed';
-                case 'yet_to_mark':
-                case 'scheduled':
                 case 'upcoming':
                     return 'Scheduled';
-                case 'in_progress':
                 case 'ongoing':
                     return 'In Progress';
                 case 'cancelled':
-                case 'cancel':
                     return 'Cancelled';
+                case 'yet_to_mark':
+                    return 'Yet to Mark';
                 case 'no_show':
                     return 'No Show';
                 default:
