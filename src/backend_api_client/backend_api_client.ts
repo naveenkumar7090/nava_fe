@@ -366,22 +366,18 @@ export class BackendApiClient {
      */
     async downloadMapPdf(userLocationId: number, mapId: number, fileName: string): Promise<void> {
         try {
-            const response = await this.client.get(`/admin/location/${userLocationId}/map/${mapId}`, {
-                responseType: 'blob'
-            });
+            const downloadUrl = `/admin/location/${userLocationId}/map/${mapId}`;
 
-            // Create blob URL and trigger download
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            // @ts-ignore - baseURL is private/protected but we need it here for building the full URL
+            const baseUrl = this['baseURL'] || 'http://localhost:3000';
+            const fullUrl = downloadUrl.startsWith('http')
+                ? downloadUrl
+                : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
+
+            // Open in a new tab for viewing instead of direct download
+            window.open(fullUrl, '_blank');
         } catch (error) {
-            console.error(`Failed to download map PDF ${mapId} for location ${userLocationId}:`, error);
+            console.error(`Failed to view map PDF ${mapId} for location ${userLocationId}:`, error);
             throw error;
         }
     }
