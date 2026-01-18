@@ -54,7 +54,7 @@ const VisuallyHiddenInput = styled('input')({
 
 const UserLocationDetails: React.FC = () => {
     const navigate = useNavigate();
-    const { location, loading, uploading, error, bookings, remedyDataMap, uploadReport, downloadMap } = useUserLocationDetailsViewModel();
+    const { location, loading, uploading, error, bookings, remedyDataMap, uploadReport, downloadMap} = useUserLocationDetailsViewModel();
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];

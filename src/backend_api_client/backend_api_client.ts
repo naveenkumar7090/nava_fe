@@ -9,7 +9,6 @@ import { RemedyData } from "./models/remedy_data";
 export class BackendApiClient {
     private client: AxiosInstance;
 
-    // Defaulting to localhost:3000 as that is likely where the local backend is running
     // constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
     constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
@@ -364,8 +363,7 @@ export class BackendApiClient {
         try {
             const downloadUrl = `/admin/location/${userLocationId}/map/${mapId}`;
 
-            // @ts-ignore - baseURL is private/protected but we need it here for building the full URL
-            const baseUrl = this['baseURL'] || 'http://localhost:3000';
+            const baseUrl = this.client.getUri() || 'http://localhost:3000';
             const fullUrl = downloadUrl.startsWith('http')
                 ? downloadUrl
                 : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;

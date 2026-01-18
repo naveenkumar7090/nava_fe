@@ -10,6 +10,7 @@ export const useUserLocationDetailsViewModel = () => {
     const [location, setLocation] = useState<UserLocation | null>(null);
     const [loading, setLoading] = useState(true);
     const [uploading, setUploading] = useState(false);
+    const [viewingRemedyUrl, setViewingRemedyUrl] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [bookings, setBookings] = useState<Booking[]>([]);
     const [remedyDataMap, setRemedyDataMap] = useState<Map<number, RemedyData>>(new Map());
