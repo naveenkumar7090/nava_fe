@@ -29,7 +29,8 @@ import {
   AccessTime,
   WbSunny,
   NightsStay,
-  PictureAsPdf
+  PictureAsPdf,
+  Download
 } from '@mui/icons-material';
 import { useCustomerProfileViewModel } from './useCustomerProfileViewModel';
 import { Booking } from '../../../backend_api_client/models/booking';
@@ -314,7 +315,6 @@ const CustomerProfile = () => {
         <Grid size={{ xs: 12, md: 8 }}>
           <Card sx={{ borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
             <CardContent sx={{ p: 4 }}>
-              {/* Header Section */}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center" sx={{ mb: 4 }}>
                 <Avatar
                   sx={{
@@ -330,7 +330,7 @@ const CustomerProfile = () => {
                   <Typography variant="h4" fontWeight="bold" gutterBottom>
                     {profile.name}
                   </Typography>
-                  <Stack direction="row" spacing={2} justifyContent={{ xs: 'center', sm: 'flex-start' }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
                     {profile.gender && (
                       <Typography variant="body1" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
                         {profile.gender}
@@ -351,6 +351,14 @@ const CustomerProfile = () => {
                       </Box>
                     )}
                   </Stack>
+
+                  <Button
+                    startIcon={<Download />}
+                    variant="contained"
+                    sx={{mt: 2}}
+                  >
+                    Download KUNDLI
+                  </Button>
                 </Box>
               </Stack>
 
