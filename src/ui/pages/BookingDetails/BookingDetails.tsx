@@ -269,6 +269,17 @@ const BookingDetails = () => {
                                     </Typography>
                                 </Box>
                             )}
+
+                            {booking.detailedTopicOfDiscussion && (
+                                <Box sx={{ mt: 3 }}>
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                        Detailed Topic of Discussion
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        {booking.detailedTopicOfDiscussion}
+                                    </Typography>
+                                </Box>
+                            )}
                         </CardContent>
                     </Card>
 

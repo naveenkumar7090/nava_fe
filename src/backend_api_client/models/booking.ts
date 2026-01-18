@@ -52,6 +52,7 @@ export interface Booking {
     email: string;
     preferredLanguage: string;
     topicOfDiscussion: string | null;
+    detailedTopicOfDiscussion: string | null;
     rating: number | null;
     meetingLink: string | null;
     price: number | null;
