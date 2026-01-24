@@ -36,7 +36,8 @@ import {
     Link,
     EditCalendar,
     Download,
-    PictureAsPdf
+    PictureAsPdf,
+    TrendingUp
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
 
@@ -226,14 +227,14 @@ const BookingDetails = () => {
                                         </Typography>
                                     </Stack>
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 4 }}>
+                                <Grid size={{ xs: 12, sm: 3 }}>
                                     <Stack spacing={1}>
                                         <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
-                                            <Schedule fontSize="small" />
-                                            <Typography variant="body2" fontWeight="500">Duration</Typography>
+                                            <TrendingUp fontSize="small" />
+                                            <Typography variant="body2" fontWeight="500">Price</Typography>
                                         </Stack>
                                         <Typography variant="body1" fontWeight="600">
-                                            {booking.duration}
+                                            ₹{((booking.price || 0) / 100).toLocaleString()}
                                         </Typography>
                                     </Stack>
                                 </Grid>
@@ -265,6 +266,17 @@ const BookingDetails = () => {
                                     </Typography>
                                     <Typography variant="body1">
                                         {booking.topicOfDiscussion}
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {booking.detailedTopicOfDiscussion && (
+                                <Box sx={{ mt: 3 }}>
+                                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                                        Detailed Topic of Discussion
+                                    </Typography>
+                                    <Typography variant="body1">
+                                        {booking.detailedTopicOfDiscussion}
                                     </Typography>
                                 </Box>
                             )}
@@ -363,7 +375,7 @@ const BookingDetails = () => {
                                         <PictureAsPdf color="error" />
                                         Saved Remedy PDFs
                                     </Typography>
-                                    
+
                                     {loadingPDFs ? (
                                         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                                             <CircularProgress size={24} />

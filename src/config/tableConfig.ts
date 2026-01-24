@@ -1,4 +1,4 @@
-import { GridColDef, GridValueFormatter } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 
 export interface ConsultationData {
   id: string;
@@ -8,7 +8,7 @@ export interface ConsultationData {
   customerName: string;
   consultant: string;
   type: 'Vastu' | 'Astro';
-  status: 'Completed' | 'Scheduled' | 'In Progress' | 'Cancelled' | 'No Show';
+  status: 'Scheduled' | 'In Progress' | 'Yet to Mark' | 'Completed'| 'Cancelled' | 'No Show';
   creationDate: string;
   bookingDateTime: string;
   orderValue: number;

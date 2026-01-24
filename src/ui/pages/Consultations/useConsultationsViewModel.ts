@@ -47,16 +47,14 @@ export const useConsultationsViewModel = () => {
             switch (normalizedStatus) {
                 case 'completed':
                     return 'Completed';
-                case 'yet_to_mark':
-                case 'scheduled':
                 case 'upcoming':
                     return 'Scheduled';
-                case 'in_progress':
                 case 'ongoing':
                     return 'In Progress';
                 case 'cancelled':
-                case 'cancel':
                     return 'Cancelled';
+                case 'yet_to_mark':
+                    return 'Yet to Mark';
                 case 'no_show':
                     return 'No Show';
                 default:
@@ -109,7 +107,7 @@ export const useConsultationsViewModel = () => {
             status: getStatus(booking.status),
             creationDate: booking.createdAt ? new Date(booking.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             bookingDateTime: booking.scheduledStartTime || booking.createdAt,
-            orderValue: 0, // Not available in current API
+            orderValue: (booking.price || 0) / 100,
             userId: booking.account.userId,
             profileId: booking.profile?.id ?? null,
             locationId: booking.location?.id ?? null,

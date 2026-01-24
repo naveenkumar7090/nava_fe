@@ -30,5 +30,13 @@ export interface UserLocation {
         name: string;
     };
     floors: UserLocationFloor[];
+    sitemap?: {
+        id: number;
+        sitemapPdf: string;
+        reportPdf: string;
+    };
+    userLocationMap?: {
+        id: number;
+    };
 }
 

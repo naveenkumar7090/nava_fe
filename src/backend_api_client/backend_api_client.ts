@@ -9,9 +9,8 @@ import { RemedyData } from "./models/remedy_data";
 export class BackendApiClient {
     private client: AxiosInstance;
 
-    // Defaulting to localhost:8000 as that is likely where the local backend is running
-    // constructor(baseURL: string = "http://localhost:8000") {
-    constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+    constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+        // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -32,20 +31,16 @@ export class BackendApiClient {
 
     // ==================== Consultation Endpoints ====================
 
-    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string, profileId?: number): Promise<{ bookings: Booking[], next: number }> {
-        const params: any = { limit, next };
-        if (staffId) {
-            params.staffId = staffId;
-        }
-        if (profileId) {
-            params.profileId = profileId;
-        }
-
+    async getAdminBookings(limit: number = 20, next: number = 0, staffId?: string, profileId?: number, locationId?: number): Promise<{ bookings: Booking[], next: number }> {
         try {
-            const response = await this.client.get('/admin/consultation/bookings', { params });
+            let url = `/admin/consultation/bookings?limit=${limit}&next=${next}`;
+            if (staffId) url += `&staffId=${staffId}`;
+            if (profileId) url += `&profileId=${profileId}`;
+            if (locationId) url += `&locationId=${locationId}`;
+            const response = await this.client.get(url);
             return response.data;
         } catch (error) {
-            console.error("Failed to fetch bookings:", error);
+            console.error("Failed to fetch admin bookings:", error);
             throw error;
         }
     }
@@ -228,7 +223,7 @@ export class BackendApiClient {
      * Get a specific user location by ID
      */
     async getUserLocationById(id: number): Promise<UserLocation> {
-        console.log(`Fetching user location by ID: ${id}`,this.client);
+        console.log(`Fetching user location by ID: ${id}`, this.client);
         try {
             const response = await this.client.get(`/admin/location/${id}`);
             return response.data;
@@ -248,41 +243,36 @@ export class BackendApiClient {
     }
 
     /**
-     * Get remedy text data for a consultation (not PDF)
+     * Get remedy PDF data (binary)
      */
-    async getRemedyPDF(consultationId: number): Promise<RemedyData> {
+    async getRemedyPDFBlob(consultationId: number): Promise<Blob> {
+        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`, {
+            responseType: 'blob'
+        });
+        return response.data;
+    }
+
+    /**
+     * View remedy PDF in a new tab
+     */
+    async viewRemedyPDF(consultationId: number): Promise<void> {
         try {
-            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy`);
-            return response.data;
+            const blob = await this.getRemedyPDFBlob(consultationId);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            // We don't revoke the URL immediately because it's needed for the new tab
         } catch (error) {
-            console.error(`Failed to get remedy data for consultation ${consultationId}:`, error);
+            console.error(`Failed to view remedy PDF for consultation ${consultationId}:`, error);
             throw error;
         }
     }
 
     /**
-     * Download remedy PDF file (generated on backend)
+     * Get remedy JSON data for a consultation
      */
-    async downloadRemedyPDF(consultationId: number, fileName: string): Promise<void> {
-        try {
-            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`, {
-                responseType: 'blob'
-            });
-            
-            // Create blob URL and trigger download
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error(`Failed to download remedy PDF for consultation ${consultationId}:`, error);
-            throw error;
-        }
+    async getRemedyData(consultationId: number): Promise<RemedyData> {
+        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy`);
+        return response.data;
     }
 
     /**
@@ -318,6 +308,30 @@ export class BackendApiClient {
         }
     }
 
+    /**
+     * Download a remedy PDF file
+     */
+    async downloadRemedyPDF(consultationId: number, pdfId: number, fileName: string): Promise<void> {
+        try {
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf/${pdfId}`, {
+                responseType: 'blob'
+            });
+
+            // Create blob URL and trigger download
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(`Failed to download PDF ${pdfId} for consultation ${consultationId}:`, error);
+            throw error;
+        }
+    }
 
     // ==================== Location Map PDF Endpoints ====================
 
@@ -336,7 +350,7 @@ export class BackendApiClient {
             const formData = new FormData();
             formData.append('file', file);
 
-            const response = await this.client.post(`/location/user/${userLocationId}/map/upload`, formData, {
+            const response = await this.client.post(`/admin/location/${userLocationId}/map/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -361,7 +375,7 @@ export class BackendApiClient {
         downloadUrl: string;
     }>> {
         try {
-            const response = await this.client.get(`/location/user/${userLocationId}/maps`);
+            const response = await this.client.get(`/admin/location/${userLocationId}/maps`);
             return response.data;
         } catch (error) {
             console.error(`Failed to fetch map PDFs for location ${userLocationId}:`, error);
@@ -374,26 +388,21 @@ export class BackendApiClient {
      */
     async downloadMapPdf(userLocationId: number, mapId: number, fileName: string): Promise<void> {
         try {
-            const response = await this.client.get(`/location/user/${userLocationId}/map/${mapId}`, {
-                responseType: 'blob'
-            });
-            
-            // Create blob URL and trigger download
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
+            const downloadUrl = `/admin/location/${userLocationId}/map/${mapId}`;
+
+            const baseUrl = this.client.getUri() || 'http://localhost:3000';
+            const fullUrl = downloadUrl.startsWith('http')
+                ? downloadUrl
+                : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
+
+            // Open in a new tab for viewing instead of direct download
+            window.open(fullUrl, '_blank');
         } catch (error) {
-            console.error(`Failed to download map PDF ${mapId} for location ${userLocationId}:`, error);
+            console.error(`Failed to view map PDF ${mapId} for location ${userLocationId}:`, error);
             throw error;
         }
     }
 }
 
-export const backendApiClient = new BackendApiClient(process.env.REACT_APP_API_URL || 'http://13.235.0.135:3000');
+export const backendApiClient = new BackendApiClient();
 
