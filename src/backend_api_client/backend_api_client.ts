@@ -10,7 +10,7 @@ export class BackendApiClient {
     private client: AxiosInstance;
 
     constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-    // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+        // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -233,11 +233,28 @@ export class BackendApiClient {
     }
 
     /**
-     * Get remedy data for a consultation
+     * Get remedy PDF data (binary)
      */
-    async getRemedyPDF(consultationId: number): Promise<RemedyData> {
-        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`);
+    async getRemedyPDFBlob(consultationId: number): Promise<Blob> {
+        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`, {
+            responseType: 'blob'
+        });
         return response.data;
+    }
+
+    /**
+     * View remedy PDF in a new tab
+     */
+    async viewRemedyPDF(consultationId: number): Promise<void> {
+        try {
+            const blob = await this.getRemedyPDFBlob(consultationId);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            // We don't revoke the URL immediately because it's needed for the new tab
+        } catch (error) {
+            console.error(`Failed to view remedy PDF for consultation ${consultationId}:`, error);
+            throw error;
+        }
     }
 
     /**

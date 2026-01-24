@@ -49,11 +49,11 @@ export const useCustomerProfileViewModel = (userId: string | undefined, profileI
                     // 3. Fetch remedy data for completed bookings
                     const remedyMap = new Map<number, RemedyData>();
                     const completedBookings = bookingsData.bookings.filter(b => b.status?.toLowerCase() === 'completed');
-                    
+
                     await Promise.all(
                         completedBookings.map(async (booking) => {
                             try {
-                                const remedy = await apiClient.getRemedyPDF(booking.id);
+                                const remedy = await apiClient.getRemedyData(booking.id);
                                 if (remedy && (remedy.problems || remedy.diagnosis || remedy.suggestions || remedy.products || remedy.reminders)) {
                                     remedyMap.set(booking.id, remedy);
                                 }

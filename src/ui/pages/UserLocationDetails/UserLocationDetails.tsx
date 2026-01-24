@@ -38,7 +38,7 @@ import { Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useUserLocationDetailsViewModel } from './useUserLocationDetailsViewModel';
 import { Booking } from '../../../backend_api_client/models/booking';
-import jsPDF from 'jspdf';
+import { backendApiClient } from '../../../backend_api_client/backend_api_client';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -54,7 +54,7 @@ const VisuallyHiddenInput = styled('input')({
 
 const UserLocationDetails: React.FC = () => {
     const navigate = useNavigate();
-    const { location, loading, uploading, error, bookings, remedyDataMap, uploadReport, downloadMap} = useUserLocationDetailsViewModel();
+    const { location, loading, uploading, error, bookings, remedyDataMap, uploadReport, downloadMap } = useUserLocationDetailsViewModel();
 
     const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
@@ -63,196 +63,12 @@ const UserLocationDetails: React.FC = () => {
         }
     };
 
-    const generateAndDownloadRemedyPDF = (booking: Booking) => {
-        const remedyData = remedyDataMap.get(booking.id);
-        if (!remedyData) {
-            alert('No remedy data available for this booking.');
-            return;
-        }
-
-        // Validate that at least one remedy field has content
-        const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.suggestions || remedyData.products || remedyData.reminders;
-        if (!hasContent) {
-            alert('No remedy information available for this booking.');
-            return;
-        }
-
+    const handleViewRemedyPDF = async (booking: Booking) => {
         try {
-            // Create new PDF document
-            const doc = new jsPDF();
-
-            // Set font and title
-            doc.setFontSize(20);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Remedy Report', 20, 30);
-
-            let yPosition = 50;
-
-            // Booking Information Section
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Booking Information', 20, yPosition);
-            yPosition += 10;
-
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Booking ID: ${booking.bookingId}`, 20, yPosition);
-            yPosition += 8;
-            doc.text(`Service: ${booking.service?.name || 'N/A'}`, 20, yPosition);
-            yPosition += 8;
-            doc.text(`Consultation Type: ${booking.consultationType?.charAt(0).toUpperCase() + booking.consultationType?.slice(1) || 'N/A'}`, 20, yPosition);
-            yPosition += 8;
-            if (booking.scheduledStartTime) {
-                const scheduledDate = new Date(booking.scheduledStartTime);
-                doc.text(`Consultation Date: ${scheduledDate.toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                })}`, 20, yPosition);
-                yPosition += 8;
-                doc.text(`Consultation Time: ${scheduledDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`, 20, yPosition);
-                yPosition += 8;
-            }
-            doc.text(`Status: ${booking.status}`, 20, yPosition);
-            yPosition += 15;
-
-            // Customer Information Section
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Customer Information', 20, yPosition);
-            yPosition += 10;
-
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Name: ${booking.account?.name || 'N/A'}`, 20, yPosition);
-            yPosition += 8;
-            doc.text(`Email: ${booking.account?.email || 'N/A'}`, 20, yPosition);
-            yPosition += 8;
-            doc.text(`Mobile: ${booking.account?.mobile || 'N/A'}`, 20, yPosition);
-            yPosition += 15;
-
-            // Location Information Section (if available)
-            if (booking.location) {
-                doc.setFontSize(16);
-                doc.setFont('helvetica', 'bold');
-                doc.text('Location Information', 20, yPosition);
-                yPosition += 10;
-
-                doc.setFontSize(12);
-                doc.setFont('helvetica', 'normal');
-                doc.text(`Location Name: ${booking.location.name || 'N/A'}`, 20, yPosition);
-                yPosition += 15;
-            }
-
-            // Check if we need a new page
-            if (yPosition > 250) {
-                doc.addPage();
-                yPosition = 30;
-            }
-
-            // Remedy Information Section
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Remedy Information', 20, yPosition);
-            yPosition += 15;
-
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'normal');
-
-            // Problems section
-            if (remedyData.problems) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Problems:', 20, yPosition);
-                yPosition += 8;
-                doc.setFont('helvetica', 'normal');
-                const problemsLines = doc.splitTextToSize(remedyData.problems, 170);
-                doc.text(problemsLines, 20, yPosition);
-                yPosition += problemsLines.length * 6 + 10;
-
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            }
-
-            // Diagnosis section
-            if (remedyData.diagnosis) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Diagnosis:', 20, yPosition);
-                yPosition += 8;
-                doc.setFont('helvetica', 'normal');
-                const diagnosisLines = doc.splitTextToSize(remedyData.diagnosis, 170);
-                doc.text(diagnosisLines, 20, yPosition);
-                yPosition += diagnosisLines.length * 6 + 10;
-
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            }
-
-            // Suggestions section
-            if (remedyData.suggestions) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Suggestions:', 20, yPosition);
-                yPosition += 8;
-                doc.setFont('helvetica', 'normal');
-                const suggestionsLines = doc.splitTextToSize(remedyData.suggestions, 170);
-                doc.text(suggestionsLines, 20, yPosition);
-                yPosition += suggestionsLines.length * 6 + 10;
-
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            }
-
-            // Products section
-            if (remedyData.products) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Recommended Products:', 20, yPosition);
-                yPosition += 8;
-                doc.setFont('helvetica', 'normal');
-                const productsLines = doc.splitTextToSize(remedyData.products, 170);
-                doc.text(productsLines, 20, yPosition);
-                yPosition += productsLines.length * 6 + 10;
-
-                if (yPosition > 250) {
-                    doc.addPage();
-                    yPosition = 30;
-                }
-            }
-
-            // Reminders section
-            if (remedyData.reminders) {
-                doc.setFont('helvetica', 'bold');
-                doc.text('Reminders:', 20, yPosition);
-                yPosition += 8;
-                doc.setFont('helvetica', 'normal');
-                const remindersLines = doc.splitTextToSize(remedyData.reminders, 170);
-                doc.text(remindersLines, 20, yPosition);
-            }
-
-            // Add footer with date
-            const currentDate = new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'italic');
-            doc.text(`Generated on: ${currentDate}`, 20, doc.internal.pageSize.height - 20);
-
-            // Generate filename
-            const customerName = booking.account?.name?.replace(/\s+/g, '_') || 'customer';
-            const fileName = `remedy_${customerName}_${booking.bookingId}_${new Date().toISOString().split('T')[0]}.pdf`;
-
-            // Download the PDF
-            doc.save(fileName);
-
+            await backendApiClient.viewRemedyPDF(booking.id);
         } catch (error) {
-            console.error('❌ Error generating PDF:', error);
-            alert('Error generating PDF. Please try again.');
+            console.error('❌ Error viewing PDF:', error);
+            alert('Error viewing PDF. Please try again.');
         }
     };
 
@@ -367,7 +183,7 @@ const UserLocationDetails: React.FC = () => {
             </>
         );
     };
-    
+
     const renderFloorDetails = (): JSX.Element => {
         if (location.scanningMethod !== "manual") {
             return <></>;
@@ -584,7 +400,7 @@ const UserLocationDetails: React.FC = () => {
                                                         startIcon={<PictureAsPdf />}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            generateAndDownloadRemedyPDF(booking);
+                                                            handleViewRemedyPDF(booking);
                                                         }}
                                                         sx={{
                                                             textTransform: 'none',
