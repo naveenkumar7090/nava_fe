@@ -1,10 +1,10 @@
 // API Configuration
 export const API_CONFIG = {
   // Use environment variable if available, otherwise use production URL
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://nava-backend-env.eba-i6zfpx5s.ap-south-1.elasticbeanstalk.com',
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://13.235.0.135:3000',
   
   // Development fallback
-  DEV_URL: 'http://localhost:8080',
+  DEV_URL: 'http://localhost:8000',
   
   // External API configuration (for direct calls if needed)
   EXTERNAL_API: {

@@ -133,7 +133,13 @@ const LoginPage: React.FC = () => {
           <div className={styles.demoCredentials}>
             <span className={styles.demoTitle}>Demo Credentials:</span>
             <span className={styles.demoCredential}>
+              Super Admin: superadmin@smartvastuastro.com / superadmin123
+            </span>
+            <span className={styles.demoCredential}>
               Admin: admin@smartvastuastro.com / admin123
+            </span>
+            <span className={styles.demoCredential}>
+              Content Creator: content@smartvastuastro.com / content123
             </span>
             <span className={styles.demoCredential}>
               Consultant: consultant@smartvastuastro.com / consultant123

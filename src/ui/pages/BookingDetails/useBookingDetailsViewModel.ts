@@ -355,10 +355,15 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
     };
 
     const downloadPDF = async (pdf: { id: number; name: string; date: string; file_url?: string }) => {
-        if (!bookingId || !booking) return;
+        if (!bookingId) return;
 
-        // Generate and download PDF with current remedy data and user info
-        generateAndDownloadPDF();
+        try {
+            // Download PDF from backend (generated on-the-fly)
+            await apiClient.downloadRemedyPDF(bookingId, pdf.name);
+        } catch (error) {
+            console.error('Failed to download PDF:', error);
+            alert('Failed to download PDF. Please try again.');
+        }
     };
 
     const updateStatus = async (status: 'completed' | 'cancel' | 'noshow') => {

@@ -30,10 +30,36 @@ interface SidebarProps {
   isCollapsed: boolean;
 }
 
-const menuItems = [
-  { id: 'consultations', label: 'Consultations', icon: <CalendarToday />, path: '/consultations' },
-  { id: 'cms', label: 'CMS', icon: <Article />, path: '/cms' },
-  { id: 'consultants', label: 'Consultants', icon: <People />, path: '/consultants' },
+type UserRole = 'superadmin' | 'admin' | 'consultant' | 'content_creator';
+
+const menuItems: {
+  id: string;
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+  roles?: UserRole[];
+}[] = [
+  {
+    id: 'consultations',
+    label: 'Consultations',
+    icon: <CalendarToday />,
+    path: '/consultations',
+    roles: ['superadmin', 'admin', 'consultant'],
+  },
+  {
+    id: 'cms',
+    label: 'CMS',
+    icon: <Article />,
+    path: '/cms',
+    roles: ['superadmin', 'content_creator'],
+  },
+  {
+    id: 'consultants',
+    label: 'Consultants',
+    icon: <People />,
+    path: '/consultants',
+    roles: ['superadmin', 'admin'],
+  },
   // { id: 'reports', label: 'Reports', icon: <Assessment />, path: '/reports' },
 ];
 
@@ -48,6 +74,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const handleMenuItemClick = (path: string) => {
     navigate(path);
   };
+
+  const visibleMenuItems = menuItems.filter((item) => {
+    if (!item.roles) {
+      return true;
+    }
+    if (!user?.role) {
+      return false;
+    }
+    return item.roles.includes(user.role);
+  });
 
   return (
     <Drawer
@@ -111,9 +147,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 {user?.firstName} {user?.lastName}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user?.role === 'admin' ? 'Administrator' : 
+                {user?.role === 'superadmin' ? 'Super Admin' :
+                 user?.role === 'admin' ? 'Administrator' : 
                  user?.role === 'consultant' ? 'Consultant' : 
-                 user?.role === 'editor' ? 'Content Editor' : 'User'}
+                 user?.role === 'content_creator' ? 'Content Creator' : 'User'}
               </Typography>
             </Box>
           </Box>
@@ -124,7 +161,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
 
       {/* Navigation Menu */}
       <List sx={{ flex: 1, p: 1 }}>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <ListItem key={item.id} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={location.pathname === item.path}

@@ -289,8 +289,8 @@ const BookingDetails = () => {
                         </Card>
                     )}
 
-                    {/* Remedy Form (Visible only if status is completed) */}
-                    {booking.status?.toLowerCase() === 'completed' && (
+                    {/* Remedy Form */}
+                    {booking && (
                         <>
                             <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                                 <CardContent sx={{ p: 3 }}>

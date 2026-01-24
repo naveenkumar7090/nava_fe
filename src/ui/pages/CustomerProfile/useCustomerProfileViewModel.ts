@@ -46,12 +46,11 @@ export const useCustomerProfileViewModel = (userId: string | undefined, profileI
                     const bookingsData = await apiClient.getAdminBookings(100, 0, undefined, profileData.id);
                     setBookings(bookingsData.bookings);
 
-                    // 3. Fetch remedy data for completed bookings
+                    // 3. Fetch remedy data for all bookings
                     const remedyMap = new Map<number, RemedyData>();
-                    const completedBookings = bookingsData.bookings.filter(b => b.status?.toLowerCase() === 'completed');
                     
                     await Promise.all(
-                        completedBookings.map(async (booking) => {
+                        bookingsData.bookings.map(async (booking) => {
                             try {
                                 const remedy = await apiClient.getRemedyPDF(booking.id);
                                 if (remedy && (remedy.problems || remedy.diagnosis || remedy.suggestions || remedy.products || remedy.reminders)) {

@@ -9,7 +9,8 @@ import { RemedyData } from "./models/remedy_data";
 export class BackendApiClient {
     private client: AxiosInstance;
 
-    // Defaulting to localhost:3000 as that is likely where the local backend is running
+    // Defaulting to localhost:8000 as that is likely where the local backend is running
+    // constructor(baseURL: string = "http://localhost:8000") {
     constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
@@ -17,6 +18,16 @@ export class BackendApiClient {
                 'auth-token': authToken
             }
         });
+
+        // this.client.interceptors.request.use((config) => {
+        //     const token = localStorage.getItem('token');
+        //     if (token) {
+        //         config.headers.Authorization = `Bearer ${token}`;
+        //     }
+        //     return config;
+
+
+        // });
     }
 
     // ==================== Consultation Endpoints ====================
@@ -237,11 +248,41 @@ export class BackendApiClient {
     }
 
     /**
-     * Get remedy data for a consultation
+     * Get remedy text data for a consultation (not PDF)
      */
     async getRemedyPDF(consultationId: number): Promise<RemedyData> {
-        const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`);
-        return response.data;
+        try {
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy`);
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to get remedy data for consultation ${consultationId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Download remedy PDF file (generated on backend)
+     */
+    async downloadRemedyPDF(consultationId: number, fileName: string): Promise<void> {
+        try {
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf`, {
+                responseType: 'blob'
+            });
+            
+            // Create blob URL and trigger download
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error(`Failed to download remedy PDF for consultation ${consultationId}:`, error);
+            throw error;
+        }
     }
 
     /**
@@ -277,30 +318,6 @@ export class BackendApiClient {
         }
     }
 
-    /**
-     * Download a remedy PDF file
-     */
-    async downloadRemedyPDF(consultationId: number, pdfId: number, fileName: string): Promise<void> {
-        try {
-            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf/${pdfId}`, {
-                responseType: 'blob'
-            });
-            
-            // Create blob URL and trigger download
-            const blob = new Blob([response.data], { type: 'application/pdf' });
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error(`Failed to download PDF ${pdfId} for consultation ${consultationId}:`, error);
-            throw error;
-        }
-    }
 
     // ==================== Location Map PDF Endpoints ====================
 

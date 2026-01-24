@@ -7,7 +7,7 @@ interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'admin' | 'consultant' | 'editor';
+  role: 'superadmin' | 'admin' | 'consultant' | 'content_creator';
   avatar?: string;
   lastLogin?: string;
 }
@@ -22,7 +22,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = `${getApiUrl()}/api`;
+const API_URL = getApiUrl();
 
 console.log("🔧 AuthContext API_URL configured as:", API_URL);
 

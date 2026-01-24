@@ -66,9 +66,10 @@
   margin: 0;
 }
 
+.userRole.superadmin { color: var(--primary-dark); }
 .userRole.admin { color: var(--error-main); }
 .userRole.consultant { color: var(--primary-main); }
-.userRole.editor { color: var(--secondary-main); }
+.userRole.content_creator { color: var(--secondary-main); }
 
 .userAvatar {
   width: 40px;
@@ -84,9 +85,10 @@
   position: relative;
 }
 
+.userAvatar.superadmin { background: var(--primary-dark); }
 .userAvatar.admin { background: var(--error-main); }
 .userAvatar.consultant { background: var(--primary-main); }
-.userAvatar.editor { background: var(--secondary-main); }
+.userAvatar.content_creator { background: var(--secondary-main); }
 
 .userAvatar:hover {
   transform: scale(1.05);
@@ -230,7 +232,8 @@
 
 .userInfoAvatar.admin { background: var(--error-main); }
 .userInfoAvatar.consultant { background: var(--primary-main); }
-.userInfoAvatar.editor { background: var(--secondary-main); }
+.userInfoAvatar.content_creator { background: var(--secondary-main); }
+.userInfoAvatar.superadmin { background: var(--primary-dark); }
 
 .userInfoName {
   font-size: var(--font-size-xl);
