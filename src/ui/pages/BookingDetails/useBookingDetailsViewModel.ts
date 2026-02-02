@@ -122,14 +122,11 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         try {
             const downloadUrl = pdf.file_url || `/admin/consultation/${bookingId}/remedy/pdf`;
 
-            // BackendApiClient instance has baseURL
-            // @ts-ignore - baseURL is private/protected but we need it here for building the full URL
-            const baseUrl = apiClient['baseURL'] || 'http://localhost:3000';
+            const baseUrl = apiClient.baseURL;
             const fullUrl = downloadUrl.startsWith('http')
                 ? downloadUrl
                 : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
 
-            // Open in a new tab for viewing instead of direct download
             window.open(fullUrl, '_blank');
         } catch (error) {
             console.error('❌ Error viewing PDF:', error);

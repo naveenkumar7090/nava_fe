@@ -9,8 +9,8 @@ import { RemedyData } from "./models/remedy_data";
 export class BackendApiClient {
     private client: AxiosInstance;
 
-    constructor(baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-        // constructor(baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+    constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+    // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
