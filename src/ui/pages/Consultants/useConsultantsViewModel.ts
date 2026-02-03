@@ -45,10 +45,6 @@ export const useConsultantsViewModel = () => {
                     additional_information: staff.additional_information || '',
                     photo: staff.photo || '',
                     assigned_services: staff.assigned_services || [],
-                    experience_years: undefined, // Not available in current API
-                    total_bookings: 0, // Placeholder
-                    avg_rating: 0, // Placeholder
-                    total_commission: 0, // Placeholder
                     status: staff.status as 'Active' | 'Inactive' || 'Active',
                     type: staff.consultationTypes && staff.consultationTypes.length > 0
                         ? (staff.consultationTypes.includes('astro') ? 'Astro' : 'Vastu')
@@ -129,16 +125,10 @@ export const useConsultantsViewModel = () => {
     const statistics = useMemo(() => {
         const totalConsultants = staffData.length;
         const activeConsultants = staffData.filter(staff => staff.status === 'Active').length;
-        const totalBookings = staffData.reduce((sum, staff) => sum + (staff.total_bookings || 0), 0);
-        const averageRating = staffData.length > 0
-            ? staffData.reduce((sum, staff) => sum + (staff.avg_rating || 0), 0) / staffData.length
-            : 0;
 
         return {
             totalConsultants,
             activeConsultants,
-            totalBookings,
-            averageRating
         };
     }, [staffData]);
 

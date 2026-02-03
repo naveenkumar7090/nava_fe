@@ -54,10 +54,6 @@ export interface StaffMember {
   photo?: string;
   assigned_services?: string[];
   // Calculated/Mock fields
-  experience_years?: number;
-  total_bookings?: number;
-  avg_rating?: number;
-  total_commission?: number;
   status?: 'Active' | 'Inactive';
   type?: 'Vastu' | 'Astro';
 }
@@ -99,16 +95,6 @@ const Consultants: React.FC = () => {
       title: 'Active',
       value: statistics.activeConsultants.toString(),
       icon: <TrendingUp sx={{ fontSize: 32, color: '#22c55e' }} />
-    },
-    {
-      title: 'Total Bookings',
-      value: statistics.totalBookings.toString(),
-      icon: <CalendarToday sx={{ fontSize: 32, color: '#8b5cf6' }} />
-    },
-    {
-      title: 'Average Rating',
-      value: statistics.averageRating.toFixed(1),
-      icon: <Star sx={{ fontSize: 32, color: '#f59e0b' }} />
     },
   ];
 
@@ -226,9 +212,6 @@ const Consultants: React.FC = () => {
                 <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Designation / Experience</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Total Bookings</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Avg Rating</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Total Commission</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
               </TableRow>
@@ -280,19 +263,7 @@ const Consultants: React.FC = () => {
                       '-'
                     )}
                   </TableCell>
-                  <TableCell>{staff.experience_years ? `${staff.experience_years} years` : '-'}</TableCell>
-                  <TableCell>{staff.total_bookings || '-'}</TableCell>
-                  <TableCell>
-                    {staff.avg_rating ? (
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Rating value={staff.avg_rating} readOnly size="small" />
-                        <Typography variant="body2">{staff.avg_rating.toFixed(1)}</Typography>
-                      </Box>
-                    ) : (
-                      '-'
-                    )}
-                  </TableCell>
-                  <TableCell>{staff.total_commission ? `₹${staff.total_commission.toLocaleString()}` : '-'}</TableCell>
+                  <TableCell>{staff.staff_designation || '-'}</TableCell>
                   <TableCell>
                     {staff.status ? (
                       <Chip
