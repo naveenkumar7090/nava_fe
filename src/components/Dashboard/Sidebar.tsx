@@ -120,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
         {!isCollapsed && (
           <Box>
             <Typography variant="h6" fontWeight="bold" color="primary">
-              Smart Vastu & Astro
+              Nava
             </Typography>
             <Typography variant="caption" color="text.secondary">
               Admin Panel
