@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { backendApiClient } from '../../../backend_api_client/backend_api_client';
 import { UserLocation } from '../../../backend_api_client/models/user_location';
 import { Booking } from '../../../backend_api_client/models/booking';
 import { RemedyData } from '../../../backend_api_client/models/remedy_data';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 
 export const useUserLocationDetailsViewModel = () => {
+    const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
     const { locationId } = useParams<{ locationId: string }>();
     const [location, setLocation] = useState<UserLocation | null>(null);
     const [loading, setLoading] = useState(true);

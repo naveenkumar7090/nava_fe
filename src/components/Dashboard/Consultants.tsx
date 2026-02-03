@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -25,6 +25,11 @@ import {
   Rating,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
 } from '@mui/material';
 import {
   People,
@@ -35,8 +40,12 @@ import {
   Star,
   CalendarToday,
   TrendingUp,
+  VpnKey,
+  Visibility,
+  VisibilityOff,
 } from '@mui/icons-material';
-import axios from 'axios';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../../backend_api_client/backend_api_client';
 
 interface StaffMember {
   staff_id: string;
@@ -57,6 +66,8 @@ interface StaffMember {
 }
 
 const Consultants: React.FC = () => {
+  const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
   const navigate = useNavigate();
   const [staffData, setStaffData] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,6 +76,59 @@ const Consultants: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState('All Types');
   const [statusFilter, setStatusFilter] = useState('All Status');
 
+  // Password Dialog State
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [snackbar, setSnackbar] = useState<{ open: boolean, message: string, severity: 'success' | 'error' }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  const handleOpenPasswordDialog = (staff: StaffMember) => {
+    setSelectedStaff(staff);
+    setNewPassword('');
+    setPasswordDialogOpen(true);
+  };
+
+  const handleClosePasswordDialog = () => {
+    setPasswordDialogOpen(false);
+    setSelectedStaff(null);
+    setNewPassword('');
+    setShowPassword(false);
+  };
+
+  const handleSetPassword = async () => {
+    if (!selectedStaff || !newPassword) return;
+
+    setIsSubmitting(true);
+    try {
+      await backendApiClient.auth.assignPassword(
+        selectedStaff.staff_id,
+        newPassword
+      );
+
+      setSnackbar({
+        open: true,
+        message: `Password successfully set for ${selectedStaff.staff_name}`,
+        severity: 'success'
+      });
+      handleClosePasswordDialog();
+    } catch (err: any) {
+      console.error('Failed to set password:', err);
+      setSnackbar({
+        open: true,
+        message: err.response?.data?.message || 'Failed to set password',
+        severity: 'error'
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   // Fetch staff data from API
   useEffect(() => {
     const fetchStaffData = async () => {
@@ -72,13 +136,13 @@ const Consultants: React.FC = () => {
         setLoading(true);
         setError(null);
         console.log('🔍 Fetching staff data from /api/staff endpoint...');
-        
-        const response = await axios.get('/staff');
-        console.log('✅ Staff API Response:', response.data, response.data.response?.returnvalue?.data);
-        
+
+        const data = await backendApiClient.getStaff();
+        console.log('✅ Staff API Response:', data, data.response?.returnvalue?.data);
+
         // Extract staff data from response - matching Zoho API structure
-        const staffList = response.data.data.response?.returnvalue?.data || response.data.data?.response || response.data.data || [];
-        
+        const staffList = data.data?.response?.returnvalue?.data || data.data?.response || data.data || [];
+
         // Transform the data to match our interface using actual Zoho API keys
         const transformedStaff = Array.isArray(staffList) ? staffList.map((staff: any) => ({
           staff_id: staff.id,
@@ -90,14 +154,14 @@ const Consultants: React.FC = () => {
           photo: staff.photo || '',
           assigned_services: staff.assigned_services || [],
           // Only use actual data from API - no mock data
-          experience_years: staff.designation ,
+          experience_years: staff.designation,
           total_bookings: staff.total_bookings || undefined,
           avg_rating: staff.avg_rating || undefined,
           total_commission: staff.total_commission || undefined,
           status: staff.status as 'Active' | 'Inactive' || undefined,
           type: staff.type as 'Vastu' | 'Astro' || undefined,
         })) : [];
-        
+
         setStaffData(transformedStaff);
         console.log('📊 Processed staff data:', transformedStaff);
       } catch (error) {
@@ -116,10 +180,10 @@ const Consultants: React.FC = () => {
   // Filter staff based on search and filters
   const filteredStaff = staffData.filter((staff) => {
     const matchesSearch = staff.staff_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         staff.staff_designation?.toLowerCase().includes(searchTerm.toLowerCase());
+      staff.staff_designation?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = typeFilter === 'All Types' || staff.type === typeFilter;
     const matchesStatus = statusFilter === 'All Status' || staff.status === statusFilter;
-    
+
     return matchesSearch && matchesType && matchesStatus;
   });
 
@@ -127,30 +191,30 @@ const Consultants: React.FC = () => {
   const totalConsultants = staffData.length;
   const activeConsultants = staffData.filter(staff => staff.status === 'Active').length;
   const totalBookings = staffData.reduce((sum, staff) => sum + (staff.total_bookings || 0), 0);
-  const averageRating = staffData.length > 0 
-    ? staffData.reduce((sum, staff) => sum + (staff.avg_rating || 0), 0) / staffData.length 
+  const averageRating = staffData.length > 0
+    ? staffData.reduce((sum, staff) => sum + (staff.avg_rating || 0), 0) / staffData.length
     : 0;
 
   const consultantStats = [
-    { 
-      title: 'Total Consultants', 
-      value: totalConsultants.toString(), 
-      icon: <People sx={{ fontSize: 32, color: '#3b82f6' }} /> 
+    {
+      title: 'Total Consultants',
+      value: totalConsultants.toString(),
+      icon: <People sx={{ fontSize: 32, color: '#3b82f6' }} />
     },
-    { 
-      title: 'Active', 
-      value: activeConsultants.toString(), 
-      icon: <TrendingUp sx={{ fontSize: 32, color: '#22c55e' }} /> 
+    {
+      title: 'Active',
+      value: activeConsultants.toString(),
+      icon: <TrendingUp sx={{ fontSize: 32, color: '#22c55e' }} />
     },
-    { 
-      title: 'Total Bookings', 
-      value: totalBookings.toString(), 
-      icon: <CalendarToday sx={{ fontSize: 32, color: '#8b5cf6' }} /> 
+    {
+      title: 'Total Bookings',
+      value: totalBookings.toString(),
+      icon: <CalendarToday sx={{ fontSize: 32, color: '#8b5cf6' }} />
     },
-    { 
-      title: 'Average Rating', 
-      value: averageRating.toFixed(1), 
-      icon: <Star sx={{ fontSize: 32, color: '#f59e0b' }} /> 
+    {
+      title: 'Average Rating',
+      value: averageRating.toFixed(1),
+      icon: <Star sx={{ fontSize: 32, color: '#f59e0b' }} />
     },
   ];
 
@@ -198,15 +262,15 @@ const Consultants: React.FC = () => {
       )}
 
       {/* Statistics Cards */}
-      <Box sx={{ 
-        display: 'grid', 
-        gridTemplateColumns: { 
-          xs: '1fr', 
+      <Box sx={{
+        display: 'grid',
+        gridTemplateColumns: {
+          xs: '1fr',
           sm: 'repeat(2, 1fr)',
-          md: 'repeat(4, 1fr)' 
-        }, 
-        gap: 3, 
-        mb: 4 
+          md: 'repeat(4, 1fr)'
+        },
+        gap: 3,
+        mb: 4
       }}>
         {consultantStats.map((stat, index) => (
           <Card key={index} sx={{ borderRadius: 2, boxShadow: 2 }}>
@@ -294,19 +358,19 @@ const Consultants: React.FC = () => {
                 <TableRow key={staff.staff_id} hover>
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <Avatar 
+                      <Avatar
                         src={staff.photo || undefined}
                         sx={{ bgcolor: 'primary.main' }}
                       >
                         {staff.staff_name.charAt(0)}
                       </Avatar>
                       <Box>
-                        <Typography 
-                          variant="subtitle2" 
-                          fontWeight="medium" 
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="medium"
                           color="primary"
                           onClick={() => navigate(`/consultant-details/${staff.staff_id}`)}
-                          sx={{ 
+                          sx={{
                             cursor: 'pointer',
                             '&:hover': {
                               textDecoration: 'underline'
@@ -365,8 +429,17 @@ const Consultants: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <IconButton size="small" color="primary">
+                    <IconButton size="small" color="primary" title="Edit Details">
                       <Edit />
+                    </IconButton>
+                    <IconButton
+                      size="small"
+                      color="secondary"
+                      title="Set Password"
+                      onClick={() => handleOpenPasswordDialog(staff)}
+                      sx={{ ml: 1 }}
+                    >
+                      <VpnKey />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -375,6 +448,62 @@ const Consultants: React.FC = () => {
           </Table>
         </TableContainer>
       </Card>
+
+      {/* Set Password Dialog */}
+      <Dialog open={passwordDialogOpen} onClose={handleClosePasswordDialog} maxWidth="xs" fullWidth>
+        <DialogTitle>Set Staff Password</DialogTitle>
+        <DialogContent>
+          <Box sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Typography variant="body2" color="text.secondary">
+              Assign a password for <strong>{selectedStaff?.staff_name}</strong> ({selectedStaff?.staff_email})
+              to enable dashboard login.
+            </Typography>
+            <TextField
+              label="New Password"
+              type={showPassword ? 'text' : 'password'}
+              fullWidth
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleClosePasswordDialog} disabled={isSubmitting}>Cancel</Button>
+          <Button
+            onClick={handleSetPassword}
+            variant="contained"
+            disabled={isSubmitting || !newPassword || newPassword.length < 6}
+          >
+            {isSubmitting ? 'Saving...' : 'Set Password'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Notification Snackbar */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        message={snackbar.message}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

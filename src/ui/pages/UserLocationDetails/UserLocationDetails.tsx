@@ -1,4 +1,4 @@
-import React, { JSX } from 'react';
+import React, { JSX, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Box,
@@ -38,7 +38,8 @@ import { Button } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useUserLocationDetailsViewModel } from './useUserLocationDetailsViewModel';
 import { Booking } from '../../../backend_api_client/models/booking';
-import { backendApiClient } from '../../../backend_api_client/backend_api_client';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 
 const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -53,6 +54,8 @@ const VisuallyHiddenInput = styled('input')({
 });
 
 const UserLocationDetails: React.FC = () => {
+    const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
     const navigate = useNavigate();
     const { location, loading, uploading, error, bookings, remedyDataMap, uploadReport, downloadMap } = useUserLocationDetailsViewModel();
 

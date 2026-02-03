@@ -1,8 +1,11 @@
-import { useState, useEffect } from 'react';
-import { backendApiClient } from '../../../backend_api_client/backend_api_client';
+import { useState, useEffect, useRef } from 'react';
 import { StaffMember } from './Consultants';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 
 export const useConsultantsViewModel = () => {
+    const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
     const [staffData, setStaffData] = useState<StaffMember[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);

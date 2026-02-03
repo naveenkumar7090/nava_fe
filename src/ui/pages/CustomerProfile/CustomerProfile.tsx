@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -34,9 +34,12 @@ import {
 } from '@mui/icons-material';
 import { useCustomerProfileViewModel } from './useCustomerProfileViewModel';
 import { Booking } from '../../../backend_api_client/models/booking';
-import { backendApiClient } from '../../../backend_api_client/backend_api_client';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 
 const CustomerProfile = () => {
+  const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
   const { userId, userProfileId } = useParams<{ userId: string; userProfileId: string }>();
   const navigate = useNavigate();
   const { profile, bookings, loading, error, remedyDataMap } = useCustomerProfileViewModel(userId, userProfileId);

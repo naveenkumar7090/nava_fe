@@ -5,12 +5,16 @@ import { UserProfile } from "./models/user_profile";
 import { UserLocation } from "./models/user_location";
 import { UpdateRemedyData } from "./models/update_remedy_options";
 import { RemedyData } from "./models/remedy_data";
+import { AuthApiClient } from "./auth/auth_api_client";
+import { StaffMember } from "./models/staff";
+import { singleton } from "tsyringe";
 
+@singleton()
 export class BackendApiClient {
     private client: AxiosInstance;
+    public readonly auth: AuthApiClient;
 
     constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-    // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -18,15 +22,15 @@ export class BackendApiClient {
             }
         });
 
-        // this.client.interceptors.request.use((config) => {
-        //     const token = localStorage.getItem('token');
-        //     if (token) {
-        //         config.headers.Authorization = `Bearer ${token}`;
-        //     }
-        //     return config;
+        this.client.interceptors.request.use((config) => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        });
 
-
-        // });
+        this.auth = new AuthApiClient(this.client);
     }
 
     // ==================== Consultation Endpoints ====================
@@ -55,12 +59,22 @@ export class BackendApiClient {
         }
     }
 
-    async getConsultants(): Promise<any[]> {
+    async getConsultants(): Promise<StaffMember[]> {
         try {
             const response = await this.client.get('/admin/consultation/staff');
             return response.data;
         } catch (error) {
             console.error("Failed to fetch consultants:", error);
+            throw error;
+        }
+    }
+
+    async getStaff(): Promise<any> { // Keep any for now as getStaff returns a complex wrapped object
+        try {
+            const response = await this.client.get('/staff');
+            return response.data;
+        } catch (error) {
+            console.error("Failed to fetch staff:", error);
             throw error;
         }
     }
@@ -403,6 +417,3 @@ export class BackendApiClient {
         }
     }
 }
-
-export const backendApiClient = new BackendApiClient();
-

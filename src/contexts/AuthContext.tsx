@@ -1,15 +1,19 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import axios from 'axios';
 import { getApiUrl } from '../config/api';
+import { AdminUser, AdminRole } from '../backend_api_client/models/admin_user';
+import { container } from 'tsyringe';
+import { BackendApiClient } from '../backend_api_client/backend_api_client';
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   firstName: string;
   lastName: string;
-  role: 'superadmin' | 'admin' | 'consultant' | 'content_creator';
+  role: AdminRole;
   avatar?: string;
   lastLogin?: string;
+  zohoStaffId: string | null;
 }
 
 interface AuthContextType {
@@ -49,6 +53,8 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const backendApiClient = useRef(container.resolve(BackendApiClient)).current;
+
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
@@ -58,8 +64,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         try {
-          const response = await axios.get('/auth/me');
-          setUser(response.data.data.user);
+          const { user: userData } = await backendApiClient.auth.getMe();
+          setUser(userData);
           setToken(storedToken);
         } catch (error) {
           localStorage.removeItem('token');
@@ -76,12 +82,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log("🚀 Login attempt:", { email, API_URL });
       console.log("🌍 Environment:", process.env.NODE_ENV);
-      
-      const response = await axios.post('/auth/login', { email, password });
-      console.log("✅ Login response:", response.data);
-      
-      const { token: newToken, user: userData } = response.data.data;
-      
+
+      const { token: newToken, user: userData } = await backendApiClient.auth.login(email, password);
+      console.log("✅ Login success:", userData);
+
       localStorage.setItem('token', newToken);
       setToken(newToken);
       setUser(userData);
