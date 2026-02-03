@@ -1,7 +1,9 @@
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { container } from 'tsyringe';
 import { BackendApiClient } from '../../../backend_api_client/backend_api_client';
 import { Booking } from '../../../backend_api_client/models/booking';
 import { ConsultationData } from '../../../config/tableConfig';
+import { useAuth } from '../../../contexts/AuthContext';
 
 /**
  * View Model hook for Consultations page
@@ -16,13 +18,16 @@ export const useConsultationsViewModel = () => {
     const [_, setNextCursor] = useState(0);
     const [hasNextPage, setHasNextPage] = useState(false);
 
+    // Auth
+    const { user } = useAuth();
+
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('All Types');
     const [statusFilter, setStatusFilter] = useState('All Status');
 
     // Initialize API client
-    const apiClient = useMemo(() => new BackendApiClient(), []);
+    const apiClient = useRef(container.resolve(BackendApiClient)).current;
 
     // Transform booking data to consultation data format
     const transformBookingToConsultation = (booking: Booking, index: number): ConsultationData => {
@@ -125,7 +130,10 @@ export const useConsultationsViewModel = () => {
             const limit = 20;
             const cursor = (page - 1) * limit;
 
-            const response = await apiClient.getAdminBookings(limit, cursor);
+            const isSuperAdmin = user?.role === 'superadmin' || user?.role === 'admin';
+            const staffIdFilter = !isSuperAdmin ? user?.zohoStaffId || undefined : undefined;
+
+            const response = await apiClient.getAdminBookings(limit, cursor, staffIdFilter);
             console.log('✅ Bookings API Response:', response);
 
             // Log first booking for debugging
@@ -152,12 +160,14 @@ export const useConsultationsViewModel = () => {
         } finally {
             setLoading(false);
         }
-    }, [apiClient]);
+    }, [apiClient, user]);
 
     // Fetch bookings on component mount
     useEffect(() => {
-        fetchBookings(1);
-    }, [fetchBookings]);
+        if (user) {
+            fetchBookings(1);
+        }
+    }, [fetchBookings, user]);
 
     // Transform booking data to consultation format
     const consultationData = useMemo(() => {

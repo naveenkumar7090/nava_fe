@@ -390,9 +390,6 @@ const Consultants: React.FC = () => {
                     )}
                   </TableCell>
                   <TableCell>
-                    <IconButton size="small" color="primary" title="Edit Details">
-                      <Edit />
-                    </IconButton>
                     <IconButton
                       size="small"
                       color="secondary"
