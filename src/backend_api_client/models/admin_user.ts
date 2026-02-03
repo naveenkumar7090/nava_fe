@@ -15,7 +15,3 @@ export interface LoginResponse {
     token: string;
     user: AdminUser;
 }
-
-export interface GetMeResponse {
-    user: AdminUser;
-}

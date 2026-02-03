@@ -64,8 +64,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         try {
-          const { user: userData } = await backendApiClient.auth.getMe();
-          setUser(userData);
+          const user = await backendApiClient.auth.getMe();
+          setUser(user);
           setToken(storedToken);
         } catch (error) {
           localStorage.removeItem('token');

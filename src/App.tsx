@@ -1,20 +1,17 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { ReactNode } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, BrowserRouter } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginPage from './components/Login/LoginPage';
 import Dashboard from './components/Dashboard/Dashboard';
-import CMS from './components/Dashboard/CMS';
 import Consultants from './ui/pages/Consultants/Consultants';
-import Reports from './components/Dashboard/Reports';
 import { theme } from './theme/theme';
 import './styles/globals.css';
 import './styles/components.css';
 
 import ConsultationsTable from './ui/pages/Consultations/Consultations';
 import AccountDetails from './ui/pages/AccountDetails/AccountDetails';
-import ConsultantOverview from './components/Dashboard/ConsultantOverview';
 import ConsultantDetails from './ui/pages/ConsultantDetails/ConsultantDetails';
 import CustomerProfile from './ui/pages/CustomerProfile/CustomerProfile';
 import BookingDetails from './ui/pages/BookingDetails/BookingDetails';
@@ -34,6 +31,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return user ? <>{children}</> : <Navigate to="/login" replace />;
 };
 
+const protectedRoute = (child: ReactNode) => {
+  return (
+    <ProtectedRoute>
+      {child}
+    </ProtectedRoute>
+  );
+};
+
 const AppContent: React.FC = () => {
   return (
     <Routes>
@@ -47,16 +52,13 @@ const AppContent: React.FC = () => {
         }
       >
         <Route index element={<Navigate to="/consultations" replace />} />
-        <Route path="consultations" element={<ConsultationsTable />} />
-        <Route path="account/:userId" element={<AccountDetails />} />
-        <Route path="consultant/:staffId" element={<ConsultantOverview />} />
-        <Route path="consultant-details/:staffId" element={<ConsultantDetails />} />
-        <Route path="user-profiles/:userId/:userProfileId" element={<CustomerProfile />} />
-        <Route path="cms" element={<CMS />} />
-        <Route path="consultants" element={<Consultants />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="bookings/:id" element={<BookingDetails />} />
-        <Route path="user-location/:locationId" element={<UserLocationDetails />} />
+        <Route path="consultations" element={protectedRoute(<ConsultationsTable />)} />
+        <Route path="account/:userId" element={protectedRoute(<AccountDetails />)} />
+        <Route path="consultant-details/:staffId" element={protectedRoute(<ConsultantDetails />)} />
+        <Route path="user-profiles/:userId/:userProfileId" element={protectedRoute(<CustomerProfile />)} />
+        <Route path="consultants" element={protectedRoute(<Consultants />)} />
+        <Route path="bookings/:id" element={protectedRoute(<BookingDetails />)} />
+        <Route path="user-location/:locationId" element={protectedRoute(<UserLocationDetails />)} />
       </Route>
     </Routes>
   );

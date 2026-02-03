@@ -1,5 +1,5 @@
 import { AxiosInstance } from "axios";
-import { LoginResponse, GetMeResponse, AdminUser } from "../models/admin_user";
+import { LoginResponse, AdminUser } from "../models/admin_user";
 
 export class AuthApiClient {
     constructor(private readonly client: AxiosInstance) { }
@@ -20,10 +20,10 @@ export class AuthApiClient {
     /**
      * Get current logged in user details
      */
-    async getMe(): Promise<GetMeResponse> {
+    async getMe(): Promise<AdminUser> {
         try {
             const response = await this.client.get('/admin/auth/me');
-            return response.data.data;
+            return response.data;
         } catch (error) {
             console.error("Failed to fetch 'me' data:", error);
             throw error;
