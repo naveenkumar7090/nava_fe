@@ -15,8 +15,7 @@ export interface Booking {
     profile: {
         id: number;
         name: string;
-        dateOfBirth?: string;
-        timeOfBirth?: string;
+        dateTimeOfBirth?: Date;
         placeOfBirth?: string;
         gender?: string;
         sunSign?: string;

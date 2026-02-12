@@ -161,7 +161,7 @@ const CustomerProfile = () => {
                       <Typography variant="subtitle2">Date of Birth</Typography>
                     </Stack>
                     <Typography variant="h6">
-                      {profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString(undefined, {
+                      {profile.dateTimeOfBirth? profile.dateTimeOfBirth.toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -202,7 +202,7 @@ const CustomerProfile = () => {
                       <Typography variant="subtitle2">Time of Birth</Typography>
                     </Stack>
                     <Typography variant="h6">
-                      {profile.timeOfBirth ? new Date(profile.timeOfBirth).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
+                      {profile.dateTimeOfBirth ? new Date(profile.dateTimeOfBirth).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Timezone Offset: {profile.timezoneOffset}

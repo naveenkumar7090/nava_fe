@@ -75,7 +75,6 @@ export interface AccountUser {
     image: string;
     data: any;
   } | string;
-  // Add other fields as needed based on actual API response
 }
 
 export interface UserProfile {
@@ -84,11 +83,9 @@ export interface UserProfile {
   relation?: string;
   email?: string | null;
   mobile?: string;
-  dateOfBirth?: string;
-  timeOfBirth?: string;
+  dateTimeOfBirth?: Date;
   placeOfBirth?: string;
   gender?: string;
-  // Add other fields as needed based on actual API response
 }
 
 export interface ApiResponse<T> {

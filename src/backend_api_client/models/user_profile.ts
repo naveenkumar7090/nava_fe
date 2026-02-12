@@ -3,8 +3,7 @@ export interface UserProfile {
     userId: number;
     name: string;
     gender: string;
-    dateOfBirth: string;
-    timeOfBirth: string;
+    dateTimeOfBirth: Date;
     placeOfBirth: string;
     timezoneOffset: number;
     lat: number;

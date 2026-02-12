@@ -4,8 +4,7 @@ export interface Account {
     mobile: string | null;
     name: string;
     gender: string;
-    dateOfBirth: string;
-    timeOfBirth: string;
+    dateTimeOfBirth: Date;
     placeOfBirth: string;
     timezoneOffset: string;
     lat: number;

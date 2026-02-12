@@ -530,16 +530,16 @@ const BookingDetails = () => {
                                                 <Grid size={{ xs: 6 }}>
                                                     <Typography variant="caption" color="text.secondary" display="block">Date of Birth</Typography>
                                                     <Typography variant="body2" fontWeight="500">
-                                                        {booking.profile.dateOfBirth
-                                                            ? new Date(booking.profile.dateOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+                                                        {booking.profile.dateTimeOfBirth
+                                                            ? new Date(booking.profile.dateTimeOfBirth).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
                                                             : 'Not Specified'}
                                                     </Typography>
                                                 </Grid>
                                                 <Grid size={{ xs: 6 }}>
                                                     <Typography variant="caption" color="text.secondary" display="block">Time of Birth</Typography>
                                                     <Typography variant="body2" fontWeight="500">
-                                                        {booking.profile.timeOfBirth
-                                                            ? new Date(booking.profile.timeOfBirth).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                        {booking.profile.dateTimeOfBirth
+                                                            ? new Date(booking.profile.dateTimeOfBirth).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                                                             : 'Not Specified'}
                                                     </Typography>
                                                 </Grid>

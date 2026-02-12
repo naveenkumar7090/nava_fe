@@ -238,27 +238,17 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   };
 
   // Helper function to format date
-  const formatDate = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-GB'); // DD/MM/YYYY format
-    } catch {
-      return dateString;
-    }
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-GB'); // DD/MM/YYYY format
   };
 
   // Helper function to format time
-  const formatTime = (timeString: string) => {
-    try {
-      const date = new Date(timeString);
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true
-      });
-    } catch {
-      return timeString;
-    }
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   // Helper function to get sign name
@@ -276,8 +266,8 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         initials: getUserInitials(account.name),
         accountName: account.name,
         placeOfBirth: account.placeOfBirth || 'Not specified',
-        dob: account.dateOfBirth ? formatDate(account.dateOfBirth) : 'Not specified',
-        tob: account.timeOfBirth ? formatTime(account.timeOfBirth) : 'Not specified',
+        dob: account.dateTimeOfBirth ? formatDate(account.dateTimeOfBirth) : 'Not specified',
+        tob: account.dateTimeOfBirth ? formatTime(account.dateTimeOfBirth) : 'Not specified',
         sunSign: getSignName(account.sunSign),
         moonSign: getSignName(account.moonSign),
         email: account.email || 'Not specified',
@@ -289,7 +279,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
           name: profile.name,
           isDefault: profile.isDefault,
           relation: profile.isDefault ? 'Default' : '',
-          dateOfBirth: profile.dateOfBirth ? formatDate(profile.dateOfBirth) : 'Not specified',
+          dateOfBirth: profile.dateTimeOfBirth ? formatDate(profile.dateTimeOfBirth) : 'Not specified',
           gender: profile.gender || 'Not specified',
           sunSign: getSignName(profile.sunSign),
           moonSign: getSignName(profile.moonSign),
