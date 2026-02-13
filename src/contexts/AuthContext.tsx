@@ -12,7 +12,7 @@ interface User {
   lastName: string;
   role: AdminRole;
   avatar?: string;
-  lastLogin?: string;
+  lastLogin?: Date;
   zohoStaffId: string | null;
 }
 

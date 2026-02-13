@@ -30,7 +30,7 @@ import {
   WbSunny,
   NightsStay,
   PictureAsPdf,
-  Download
+  Star,
 } from '@mui/icons-material';
 import { useCustomerProfileViewModel } from './useCustomerProfileViewModel';
 import { Booking } from '../../../backend_api_client/models/booking';
@@ -54,6 +54,12 @@ const CustomerProfile = () => {
     } catch (error) {
       console.error('❌ Error viewing PDF:', error);
       alert('Error viewing PDF. Please try again.');
+    }
+  };
+
+  const handleViewKundli = () => {
+    if (profile) {
+      navigate(`/kundli-charts?profileId=${profile.id}`);
     }
   };
 
@@ -141,11 +147,12 @@ const CustomerProfile = () => {
                   </Stack>
 
                   <Button
-                    startIcon={<Download />}
+                    startIcon={<Star />}
                     variant="contained"
+                    onClick={handleViewKundli}
                     sx={{ mt: 2 }}
                   >
-                    Download KUNDLI
+                    View Kundli
                   </Button>
                 </Box>
               </Stack>
@@ -161,7 +168,7 @@ const CustomerProfile = () => {
                       <Typography variant="subtitle2">Date of Birth</Typography>
                     </Stack>
                     <Typography variant="h6">
-                      {profile.dateTimeOfBirth? profile.dateTimeOfBirth.toLocaleDateString(undefined, {
+                      {profile.dateTimeOfBirth ? profile.dateTimeOfBirth.toLocaleDateString(undefined, {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'

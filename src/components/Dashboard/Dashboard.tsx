@@ -43,9 +43,11 @@ const Dashboard: React.FC = () => {
       case '/cms':
         return 'Content Management System';
       case '/consultants':
-        return 'Consultants Management';  
+        return 'Consultants Management';
       case '/reports':
         return 'Reports & Analytics';
+      case '/kundli-charts':
+        return 'Kundli Analysis';
       default:
         return 'Dashboard';
     }
@@ -70,10 +72,10 @@ const Dashboard: React.FC = () => {
 
   const currentDrawerWidth = isSidebarCollapsed ? collapsedDrawerWidth : drawerWidth;
 
-    return (
-      <Box sx={{ display: 'flex' }}>
+  return (
+    <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-      
+
       {/* Top AppBar */}
       <AppBar
         position="fixed"
@@ -100,11 +102,11 @@ const Dashboard: React.FC = () => {
           >
             <MenuIcon />
           </IconButton>
-          
+
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, color: 'text.primary' }}>
             {getPageTitle()}
           </Typography>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Typography variant="body2" color="text.secondary">
               {user?.firstName} {user?.lastName}
@@ -161,7 +163,7 @@ const Dashboard: React.FC = () => {
       </AppBar>
 
       {/* Sidebar */}
-      <Sidebar 
+      <Sidebar
         isCollapsed={isSidebarCollapsed}
       />
 

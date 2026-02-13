@@ -1,17 +1,43 @@
+import { IsNumber, IsOptional, IsString, IsEnum, ValidateNested, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
+
 export type AdminRole = 'superadmin' | 'admin' | 'consultant' | 'content_creator';
 
-export interface AdminUser {
-    id: number;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: AdminRole;
-    zohoStaffId: string | null;
+export class AdminUser {
+    @IsNumber()
+    id!: number;
+
+    @IsString()
+    email!: string;
+
+    @IsString()
+    firstName!: string;
+
+    @IsString()
+    lastName!: string;
+
+    @IsString()
+    role!: AdminRole;
+
+    @IsOptional()
+    @IsString()
+    zohoStaffId!: string | null;
+
+    @IsOptional()
+    @IsString()
     avatar?: string;
-    lastLogin?: string;
+
+    @IsOptional()
+    @Type(() => Date)
+    @IsDate()
+    lastLogin?: Date;
 }
 
-export interface LoginResponse {
-    token: string;
-    user: AdminUser;
+export class LoginResponse {
+    @IsString()
+    token!: string;
+
+    @ValidateNested()
+    @Type(() => AdminUser)
+    user!: AdminUser;
 }

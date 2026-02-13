@@ -10,7 +10,7 @@ export interface ConsultationData {
   type: 'Vastu' | 'Astro';
   status: 'Scheduled' | 'In Progress' | 'Yet to Mark' | 'Completed'| 'Cancelled' | 'No Show';
   creationDate: string;
-  bookingDateTime: string;
+  bookingDateTime: Date;
   orderValue: number;
   userId?: number | null; // User ID from booking data for navigation
   locationId?: number | null; // Location ID for navigation

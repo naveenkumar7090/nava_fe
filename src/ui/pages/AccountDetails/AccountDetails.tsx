@@ -25,6 +25,7 @@ import {
   Business,
   Upload,
   PictureAsPdf,
+  Star,
 } from '@mui/icons-material';
 import { useAccountDetailsViewModel } from './useAccountDetailsViewModel';
 
@@ -67,9 +68,10 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
     navigate('/consultations');
   };
 
-  const handleDownloadKundli = () => {
-    // Implement download functionality
-    console.log('Download KUNDLI');
+  const handleViewKundli = () => {
+    if (account) {
+      navigate(`/kundli-charts?userId=${account.id}`);
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -702,8 +704,8 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                     {accountData.name}
                   </Typography>
                   <Button
-                    startIcon={<Download />}
-                    onClick={handleDownloadKundli}
+                    startIcon={<Star />}
+                    onClick={handleViewKundli}
                     variant="contained"
                     sx={{
                       backgroundColor: 'rgba(255,255,255,0.2)',
@@ -713,7 +715,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                       }
                     }}
                   >
-                    Download KUNDLI
+                    View Kundli
                   </Button>
                 </Box>
               </Box>

@@ -8,6 +8,9 @@ import { RemedyData } from "./models/remedy_data";
 import { AuthApiClient } from "./auth/auth_api_client";
 import { StaffMember } from "./models/staff";
 import { singleton } from "tsyringe";
+import { plainToInstance } from "class-transformer";
+import { KundliCharts } from "./models/kundli_charts";
+
 
 @singleton()
 export class BackendApiClient {
@@ -15,7 +18,7 @@ export class BackendApiClient {
     public readonly auth: AuthApiClient;
 
     constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-    // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+        // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -43,12 +46,17 @@ export class BackendApiClient {
             if (profileId) url += `&profileId=${profileId}`;
             if (locationId) url += `&locationId=${locationId}`;
             const response = await this.client.get(url);
-            return response.data;
+            return {
+                bookings: plainToInstance(Booking, response.data.bookings as any[]),
+                next: response.data.next
+            };
+
         } catch (error) {
             console.error("Failed to fetch admin bookings:", error);
             throw error;
         }
     }
+
 
     async getStaffDetails(staffId: string): Promise<any> {
         try {
@@ -63,12 +71,13 @@ export class BackendApiClient {
     async getConsultants(): Promise<StaffMember[]> {
         try {
             const response = await this.client.get('/admin/consultation/staff');
-            return response.data;
+            return plainToInstance(StaffMember, response.data as any[]);
         } catch (error) {
             console.error("Failed to fetch consultants:", error);
             throw error;
         }
     }
+
 
     async getStaff(): Promise<any> { // Keep any for now as getStaff returns a complex wrapped object
         try {
@@ -86,12 +95,13 @@ export class BackendApiClient {
     async getAdminBooking(bookingId: number): Promise<Booking> {
         try {
             const response = await this.client.get(`/admin/consultation/bookings/${bookingId}`);
-            return response.data;
+            return plainToInstance(Booking, response.data);
         } catch (error) {
             console.error(`Failed to fetch booking ${bookingId}:`, error);
             throw error;
         }
     }
+
 
     /**
      * Update status of a booking (Admin)
@@ -145,12 +155,13 @@ export class BackendApiClient {
     async getAllAccounts(): Promise<Account[]> {
         try {
             const response = await this.client.get('/admin/account/users');
-            return response.data;
+            return plainToInstance(Account, response.data as any[]);
         } catch (error) {
             console.error("Failed to fetch all accounts:", error);
             throw error;
         }
     }
+
 
     /**
      * Get a specific account by user ID
@@ -158,12 +169,13 @@ export class BackendApiClient {
     async getAccountById(userId: number): Promise<Account> {
         try {
             const response = await this.client.get(`/admin/account/users/${userId}`);
-            return response.data;
+            return plainToInstance(Account, response.data);
         } catch (error) {
             console.error(`Failed to fetch account ${userId}:`, error);
             throw error;
         }
     }
+
 
     // ==================== UserProfile Endpoints ====================
 
@@ -176,12 +188,16 @@ export class BackendApiClient {
         try {
             const params = includeDefault ? { with_default: 'true' } : {};
             const response = await this.client.get(`/admin/userprofile/users/${userId}/profiles`, { params });
-            return response.data;
+            return {
+                profiles: plainToInstance(UserProfile, response.data.profiles as any[])
+            };
+
         } catch (error) {
             console.error(`Failed to fetch profiles for user ${userId}:`, error);
             throw error;
         }
     }
+
 
     /**
      * Get a specific user profile
@@ -191,12 +207,13 @@ export class BackendApiClient {
     async getUserProfile(userId: number, profileId: number | 'default'): Promise<UserProfile> {
         try {
             const response = await this.client.get(`/admin/userprofile/users/${userId}/profiles/${profileId}`);
-            return response.data;
+            return plainToInstance(UserProfile, response.data);
         } catch (error) {
             console.error(`Failed to fetch profile ${profileId} for user ${userId}:`, error);
             throw error;
         }
     }
+
 
     /**
      * Get profiles by ID only
@@ -204,12 +221,13 @@ export class BackendApiClient {
     async getProfileById(profileId: number): Promise<UserProfile> {
         try {
             const response = await this.client.get(`/admin/userprofile/profiles/${profileId}`);
-            return response.data;
+            return plainToInstance(UserProfile, response.data);
         } catch (error) {
             console.error(`Failed to fetch profile ${profileId}:`, error);
             throw error;
         }
     }
+
 
     // ==================== Location Endpoints ====================
 
@@ -221,18 +239,22 @@ export class BackendApiClient {
         try {
             const response = await this.client.get(`/admin/location/users/${userId}`, { params });
             // Handle both array response and wrapped response
+            let data: any[] = [];
             if (Array.isArray(response.data)) {
-                return response.data;
+                data = response.data;
             } else if (response.data?.locations && Array.isArray(response.data.locations)) {
-                return response.data.locations;
+                data = response.data.locations;
+            } else {
+                console.warn('Unexpected response format for getUserLocations:', response.data);
+                return [];
             }
-            console.warn('Unexpected response format for getUserLocations:', response.data);
-            return [];
+            return plainToInstance(UserLocation, data);
         } catch (error) {
             console.error(`Failed to fetch locations for user ${userId}:`, error);
             throw error;
         }
     }
+
 
     /**
      * Get a specific user location by ID
@@ -241,12 +263,13 @@ export class BackendApiClient {
         console.log(`Fetching user location by ID: ${id}`, this.client);
         try {
             const response = await this.client.get(`/admin/location/${id}`);
-            return response.data;
+            return plainToInstance(UserLocation, response.data);
         } catch (error) {
             console.error(`Failed to fetch user location ${id}:`, error);
             throw error;
         }
     }
+
     // ==================== Remedy Endpoints ====================
 
     /**
@@ -287,8 +310,9 @@ export class BackendApiClient {
      */
     async getRemedyData(consultationId: number): Promise<RemedyData> {
         const response = await this.client.get(`/admin/consultation/${consultationId}/remedy`);
-        return response.data;
+        return plainToInstance(RemedyData, response.data);
     }
+
 
     /**
      * Get list of saved remedy PDFs for a consultation
@@ -414,6 +438,34 @@ export class BackendApiClient {
             window.open(fullUrl, '_blank');
         } catch (error) {
             console.error(`Failed to view map PDF ${mapId} for location ${userLocationId}:`, error);
+            throw error;
+        }
+    }
+
+    // ==================== Astro Endpoints ====================
+
+    /**
+     * Get Kundli charts for an account
+     */
+    async getAccountKundliCharts(userId: number): Promise<KundliCharts> {
+        try {
+            const response = await this.client.get(`/admin/astro/users/${userId}/kundli-account-charts`);
+            return plainToInstance(KundliCharts, response.data);
+        } catch (error) {
+            console.error("Failed to fetch Account Kundli charts:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get Kundli charts for a user profile
+     */
+    async getProfileKundliCharts(profileId: number): Promise<KundliCharts> {
+        try {
+            const response = await this.client.get(`/admin/astro/profiles/${profileId}/kundli-account-charts`);
+            return plainToInstance(KundliCharts, response.data);
+        } catch (error) {
+            console.error("Failed to fetch Profile Kundli charts:", error);
             throw error;
         }
     }

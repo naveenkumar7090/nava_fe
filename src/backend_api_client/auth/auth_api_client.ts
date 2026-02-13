@@ -1,5 +1,6 @@
 import { AxiosInstance } from "axios";
 import { LoginResponse, AdminUser } from "../models/admin_user";
+import { plainToInstance } from "class-transformer";
 
 export class AuthApiClient {
     constructor(private readonly client: AxiosInstance) { }
@@ -10,7 +11,7 @@ export class AuthApiClient {
     async login(email: string, password: string): Promise<LoginResponse> {
         try {
             const response = await this.client.post('/admin/auth/login', { email, password });
-            return response.data.data;
+            return plainToInstance(LoginResponse, response.data.data);
         } catch (error) {
             console.error("Login failed:", error);
             throw error;
@@ -23,7 +24,7 @@ export class AuthApiClient {
     async getMe(): Promise<AdminUser> {
         try {
             const response = await this.client.get('/admin/auth/me');
-            return response.data;
+            return plainToInstance(AdminUser, response.data);
         } catch (error) {
             console.error("Failed to fetch 'me' data:", error);
             throw error;
@@ -39,7 +40,7 @@ export class AuthApiClient {
                 staffId,
                 password
             });
-            return response.data.data;
+            return plainToInstance(AdminUser, response.data.data);
         } catch (error) {
             console.error("Failed to assign password:", error);
             throw error;

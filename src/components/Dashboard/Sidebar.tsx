@@ -39,38 +39,38 @@ const menuItems: {
   path: string;
   roles?: UserRole[];
 }[] = [
-  {
-    id: 'consultations',
-    label: 'Consultations',
-    icon: <CalendarToday />,
-    path: '/consultations',
-    roles: ['superadmin', 'admin', 'consultant'],
-  },
-  {
-    id: 'cms',
-    label: 'CMS',
-    icon: <Article />,
-    path: '/cms',
-    roles: ['superadmin', 'content_creator'],
-  },
-  {
-    id: 'consultants',
-    label: 'Consultants',
-    icon: <People />,
-    path: '/consultants',
-    roles: ['superadmin', 'admin'],
-  },
-  // { id: 'reports', label: 'Reports', icon: <Assessment />, path: '/reports' },
-];
+    {
+      id: 'consultations',
+      label: 'Consultations',
+      icon: <CalendarToday />,
+      path: '/consultations',
+      roles: ['superadmin', 'admin', 'consultant'],
+    },
+    {
+      id: 'cms',
+      label: 'CMS',
+      icon: <Article />,
+      path: '/cms',
+      roles: ['superadmin', 'content_creator'],
+    },
+    {
+      id: 'consultants',
+      label: 'Consultants',
+      icon: <People />,
+      path: '/consultants',
+      roles: ['superadmin', 'admin'],
+    },
+    // { id: 'reports', label: 'Reports', icon: <Assessment />, path: '/reports' },
+  ];
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
   const { user } = useAuth();
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const currentDrawerWidth = isCollapsed ? collapsedDrawerWidth : drawerWidth;
-  
+
   const handleMenuItemClick = (path: string) => {
     navigate(path);
   };
@@ -148,9 +148,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {user?.role === 'superadmin' ? 'Super Admin' :
-                 user?.role === 'admin' ? 'Administrator' : 
-                 user?.role === 'consultant' ? 'Consultant' : 
-                 user?.role === 'content_creator' ? 'Content Creator' : 'User'}
+                  user?.role === 'admin' ? 'Administrator' :
+                    user?.role === 'consultant' ? 'Consultant' :
+                      user?.role === 'content_creator' ? 'Content Creator' : 'User'}
               </Typography>
             </Box>
           </Box>
@@ -189,14 +189,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
                 },
               }}
             >
-              <ListItemIcon sx={{ 
+              <ListItemIcon sx={{
                 minWidth: isCollapsed ? 'auto' : 40,
                 justifyContent: 'center'
               }}>
                 {item.icon}
               </ListItemIcon>
               {!isCollapsed && (
-                <ListItemText 
+                <ListItemText
                   primary={item.label}
                   primaryTypographyProps={{
                     fontWeight: location.pathname === item.path ? 'medium' : 'normal',
@@ -223,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed }) => {
               },
             }}
           >
-            <ListItemIcon sx={{ 
+            <ListItemIcon sx={{
               minWidth: isCollapsed ? 'auto' : 40,
               justifyContent: 'center'
             }}>

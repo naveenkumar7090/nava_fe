@@ -1,62 +1,157 @@
-export interface Booking {
-    id: number;
-    bookingId: string;
-    consultationType: 'astro' | 'vastu';
+import { IsNumber, IsOptional, IsString, IsEnum, ValidateNested, IsDate } from 'class-validator';
+import { Type } from 'class-transformer';
 
-    // Account details (user who placed the order)
-    account: {
-        userId: number;
-        name: string;
-        email: string;
-        mobile: string | null;
-    };
+export class BookingAccount {
+    @IsNumber()
+    userId!: number;
 
-    // Profile details (for Astro consultations, null for Vastu)
-    profile: {
-        id: number;
-        name: string;
-        dateTimeOfBirth?: Date;
-        placeOfBirth?: string;
-        gender?: string;
-        sunSign?: string;
-        moonSign?: string;
-    } | null;
+    @IsString()
+    name!: string;
 
-    // Location details (for Vastu consultations, null for Astro)
-    location: {
-        id: number;
-        name: string;
-    } | null;
+    @IsString()
+    email!: string;
 
-    // Service details
-    service: {
-        id: string;
-        name: string;
-    };
-
-    // Staff details
-    staff: {
-        id: string;
-        name: string;
-    };
-
-    // Schedule fields (flattened)
-    createdAt: string; // When booking was created/placed
-    scheduledStartTime: string | null; // When consultation is scheduled for
-    scheduledEndTime: string | null;
-    duration: string;
-    status: string;
-
-    // Additional details
-    email: string;
-    preferredLanguage: string;
-    topicOfDiscussion: string | null;
-    detailedTopicOfDiscussion: string | null;
-    rating: number | null;
-    meetingLink: string | null;
-    price: number | null;
-    updatedAt: string;
+    @IsOptional()
+    @IsString()
+    mobile!: string | null;
 }
+
+export class BookingProfile {
+    @IsNumber()
+    id!: number;
+
+    @IsString()
+    name!: string;
+
+    @IsOptional()
+    @Type(() => Date)
+    @IsDate()
+    dateTimeOfBirth?: Date;
+
+    @IsOptional()
+    @IsString()
+    placeOfBirth?: string;
+
+    @IsOptional()
+    @IsString()
+    gender?: string;
+
+    @IsOptional()
+    @IsString()
+    sunSign?: string;
+
+    @IsOptional()
+    @IsString()
+    moonSign?: string;
+}
+
+export class BookingLocation {
+    @IsNumber()
+    id!: number;
+
+    @IsString()
+    name!: string;
+}
+
+export class BookingService {
+    @IsString()
+    id!: string;
+
+    @IsString()
+    name!: string;
+}
+
+export class BookingStaff {
+    @IsString()
+    id!: string;
+
+    @IsString()
+    name!: string;
+}
+
+export class Booking {
+    @IsNumber()
+    id!: number;
+
+    @IsString()
+    bookingId!: string;
+
+    @IsString()
+    consultationType!: 'astro' | 'vastu';
+
+    @ValidateNested()
+    @Type(() => BookingAccount)
+    account!: BookingAccount;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => BookingProfile)
+    profile!: BookingProfile | null;
+
+    @IsOptional()
+    @ValidateNested()
+    @Type(() => BookingLocation)
+    location!: BookingLocation | null;
+
+    @ValidateNested()
+    @Type(() => BookingService)
+    service!: BookingService;
+
+    @ValidateNested()
+    @Type(() => BookingStaff)
+    staff!: BookingStaff;
+
+    @Type(() => Date)
+    @IsDate()
+    createdAt!: Date;
+
+    @IsOptional()
+    @Type(() => Date)
+    @IsDate()
+    scheduledStartTime!: Date | null;
+
+    @IsOptional()
+    @Type(() => Date)
+    @IsDate()
+    scheduledEndTime!: Date | null;
+
+    @IsString()
+    duration!: string;
+
+    @IsString()
+    status!: string;
+
+    @IsString()
+    email!: string;
+
+    @IsString()
+    preferredLanguage!: string;
+
+    @IsOptional()
+    @IsString()
+    topicOfDiscussion!: string | null;
+
+    @IsOptional()
+    @IsString()
+    detailedTopicOfDiscussion!: string | null;
+
+    @IsOptional()
+    @IsNumber()
+    rating!: number | null;
+
+    @IsOptional()
+    @IsString()
+    meetingLink!: string | null;
+
+    @IsOptional()
+    @IsNumber()
+    price!: number | null;
+
+    @Type(() => Date)
+    @IsDate()
+    updatedAt!: Date;
+}
+
 
 export enum BookingStatus {
     upcoming = "upcoming",
@@ -68,7 +163,7 @@ export enum BookingStatus {
 }
 
 function isBookingStatus(value: string): value is BookingStatus {
-    return Object.values(BookingStatus).includes(value as BookingStatus); 
+    return Object.values(BookingStatus).includes(value as BookingStatus);
 }
 
 export function parseBookingStatus(value: string): BookingStatus {
