@@ -24,6 +24,11 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
 
     const apiClient = useMemo(() => new BackendApiClient(), []);
 
+    const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [availableSlots, setAvailableSlots] = useState<Date[]>([]);
+    const [loadingSlots, setLoadingSlots] = useState(false);
+
     useEffect(() => {
         if (!bookingId) {
             setLoading(false);
@@ -77,85 +82,6 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         fetchBooking();
     }, [bookingId, apiClient]);
 
-    const handleRemedyInputChange = (field: keyof RemedyData, value: string) => {
-        setRemedyData(prev => ({
-            ...prev,
-            [field]: value
-        }));
-    };
-
-    const saveRemedyData = async () => {
-        if (!bookingId) return;
-
-        const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.suggestions || remedyData.products || remedyData.reminders;
-        if (!hasContent) {
-            alert('Please fill in at least one field before saving.');
-            return;
-        }
-
-        setIsSaving(true);
-
-        try {
-            await apiClient.updateRemedyData(bookingId, remedyData);
-            alert('Remedy data saved successfully!');
-
-            // Refresh saved PDFs list after saving
-            try {
-                const pdfs = await apiClient.getSavedRemedyPDFs(bookingId);
-                setSavedPDFs(pdfs);
-            } catch (pdfError) {
-                console.log("Failed to refresh PDFs list", pdfError);
-            }
-        } catch (error) {
-            console.error('❌ Error saving remedy data:', error);
-            alert('Error saving remedy data. Please try again.');
-        } finally {
-            setIsSaving(false);
-        }
-    };
-
-
-
-    const downloadPDF = async (pdf: { id: number; name: string; date: string; file_url?: string }) => {
-        if (!bookingId) return;
-
-        try {
-            const downloadUrl = pdf.file_url || `/admin/consultation/${bookingId}/remedy/pdf`;
-
-            const baseUrl = apiClient.baseURL;
-            const fullUrl = downloadUrl.startsWith('http')
-                ? downloadUrl
-                : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
-
-            window.open(fullUrl, '_blank');
-        } catch (error) {
-            console.error('❌ Error viewing PDF:', error);
-            alert('Failed to view PDF. Please try again.');
-        }
-    };
-
-    const updateStatus = async (status: 'completed' | 'cancel' | 'noshow') => {
-        if (!bookingId) return;
-
-        if (!window.confirm(`Are you sure you want to mark this booking as ${status}?`)) {
-            return;
-        }
-
-        try {
-            await apiClient.updateBookingStatus(bookingId, status);
-            // Refresh booking details
-            const data = await apiClient.getAdminBooking(bookingId);
-            setBooking(data);
-        } catch (e) {
-            alert(`Failed to update status: ${e instanceof Error ? e.message : 'Unknown error'}`);
-        }
-    };
-
-    const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-    const [availableSlots, setAvailableSlots] = useState<Date[]>([]);
-    const [loadingSlots, setLoadingSlots] = useState(false);
-
     const checkAvailability = async (date: Date) => {
         if (!bookingId) return;
         setLoadingSlots(true);
@@ -172,48 +98,124 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         }
     };
 
-    const confirmReschedule = async (slot: Date) => {
-        if (!bookingId) return;
-        if (!window.confirm(`Reschedule to ${slot.toLocaleString()}?`)) return;
-
-        try {
-            await apiClient.rescheduleBooking(bookingId, slot.toISOString());
-            setRescheduleDialogOpen(false);
-            const data = await apiClient.getAdminBooking(bookingId);
-            setBooking(data);
-            alert("Rescheduled successfully!");
-        } catch (e) {
-            alert("Failed to reschedule");
-        }
-    };
-
-    const openRescheduleDialog = () => {
-        setRescheduleDialogOpen(true);
-        // Default to today
-        checkAvailability(new Date());
-    };
-
     return {
         booking,
         loading,
         error,
         remedyData,
-        handleRemedyInputChange,
         isSaving,
-        saveRemedyData,
-        updateStatus,
         savedPDFs,
         loadingPDFs,
-        downloadPDF,
         rescheduleState: {
             open: rescheduleDialogOpen,
-            setOpen: setRescheduleDialogOpen,
-            openDialog: openRescheduleDialog,
             selectedDate,
             availableSlots,
             loadingSlots,
-            checkAvailability,
-            confirmReschedule
-        }
+
+            setOpen: setRescheduleDialogOpen,
+            openDialog: () => {
+                setRescheduleDialogOpen(true);
+                // Default to today
+                checkAvailability(new Date());
+            },
+            checkAvailability: async (date: Date) => {
+                if (!bookingId) return;
+                setLoadingSlots(true);
+                setSelectedDate(date);
+                try {
+                    const dateStr = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                    const { slots } = await apiClient.getBookingSlots(bookingId, dateStr);
+                    setAvailableSlots(slots);
+                } catch (e) {
+                    console.error("Failed to check availability", e);
+                    alert("Failed to fetch slots");
+                } finally {
+                    setLoadingSlots(false);
+                }
+            },
+            confirmReschedule: async (slot: Date) => {
+                if (!bookingId) return;
+                if (!window.confirm(`Reschedule to ${slot.toLocaleString()}?`)) return;
+
+                try {
+                    await apiClient.rescheduleBooking(bookingId, slot.toISOString());
+                    setRescheduleDialogOpen(false);
+                    const data = await apiClient.getAdminBooking(bookingId);
+                    setBooking(data);
+                    alert("Rescheduled successfully!");
+                } catch (e) {
+                    alert("Failed to reschedule");
+                }
+            },
+        },
+
+        handleRemedyInputChange: (field: keyof RemedyData, value: string) => {
+            setRemedyData(prev => ({
+                ...prev,
+                [field]: value
+            }));
+        },
+        saveRemedyData: async () => {
+            if (!bookingId) return;
+
+            const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.suggestions || remedyData.products || remedyData.reminders;
+            if (!hasContent) {
+                alert('Please fill in at least one field before saving.');
+                return;
+            }
+
+            setIsSaving(true);
+
+            try {
+                await apiClient.updateRemedyData(bookingId, remedyData);
+                alert('Remedy data saved successfully!');
+
+                // Refresh saved PDFs list after saving
+                try {
+                    const pdfs = await apiClient.getSavedRemedyPDFs(bookingId);
+                    setSavedPDFs(pdfs);
+                } catch (pdfError) {
+                    console.log("Failed to refresh PDFs list", pdfError);
+                }
+            } catch (error) {
+                console.error('❌ Error saving remedy data:', error);
+                alert('Error saving remedy data. Please try again.');
+            } finally {
+                setIsSaving(false);
+            }
+        },
+        updateStatus: async (status: 'completed' | 'cancel' | 'noshow') => {
+            if (!bookingId) return;
+
+            if (!window.confirm(`Are you sure you want to mark this booking as ${status}?`)) {
+                return;
+            }
+
+            try {
+                await apiClient.updateBookingStatus(bookingId, status);
+                // Refresh booking details
+                const data = await apiClient.getAdminBooking(bookingId);
+                setBooking(data);
+            } catch (e) {
+                alert(`Failed to update status: ${e instanceof Error ? e.message : 'Unknown error'}`);
+            }
+        },
+        downloadPDF: async (pdf: { id: number; name: string; date: string; file_url?: string }) => {
+            if (!bookingId) return;
+
+            try {
+                const downloadUrl = pdf.file_url || `/admin/consultation/${bookingId}/remedy/pdf`;
+
+                const baseUrl = apiClient.baseURL;
+                const fullUrl = downloadUrl.startsWith('http')
+                    ? downloadUrl
+                    : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
+
+                window.open(fullUrl, '_blank');
+            } catch (error) {
+                console.error('❌ Error viewing PDF:', error);
+                alert('Failed to view PDF. Please try again.');
+            }
+        },
     };
 };
