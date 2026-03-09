@@ -17,6 +17,7 @@ import CustomerProfile from './ui/pages/CustomerProfile/CustomerProfile';
 import BookingDetails from './ui/pages/BookingDetails/BookingDetails';
 import UserLocationDetails from './ui/pages/UserLocationDetails/UserLocationDetails';
 import KundiChartsPage from './ui/pages/KundiCharts/KundiChartsPage';
+import UserSitemapsPage from './ui/pages/UserSitemaps/UserSitemaps';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
@@ -61,6 +62,7 @@ const AppContent: React.FC = () => {
         <Route path="bookings/:id" element={protectedRoute(<BookingDetails />)} />
         <Route path="user-location/:locationId" element={protectedRoute(<UserLocationDetails />)} />
         <Route path="kundli-charts" element={protectedRoute(<KundiChartsPage />)} />
+        <Route path="user-sitemaps" element={protectedRoute(<UserSitemapsPage />)} />
       </Route>
     </Routes>
   );

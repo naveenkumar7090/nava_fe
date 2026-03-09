@@ -20,6 +20,7 @@ import {
   Assessment,
   Settings,
   Star,
+  Map,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -44,6 +45,13 @@ const menuItems: {
       label: 'Consultations',
       icon: <CalendarToday />,
       path: '/consultations',
+      roles: ['superadmin', 'admin', 'consultant'],
+    },
+    {
+      id: 'user-sitemaps',
+      label: 'User Sitemaps',
+      icon: <Map />,
+      path: '/user-sitemaps',
       roles: ['superadmin', 'admin', 'consultant'],
     },
     {

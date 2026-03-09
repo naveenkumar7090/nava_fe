@@ -48,6 +48,8 @@ const Dashboard: React.FC = () => {
         return 'Reports & Analytics';
       case '/kundli-charts':
         return 'Kundli Analysis';
+      case '/user-sitemaps':
+        return 'User Sitemaps';
       default:
         return 'Dashboard';
     }

@@ -10,6 +10,7 @@ import { StaffMember } from "./models/staff";
 import { singleton } from "tsyringe";
 import { plainToInstance } from "class-transformer";
 import { KundliCharts } from "./models/kundli_charts";
+import { UserSitemap } from "./models/user_sitemap";
 
 
 @singleton()
@@ -18,7 +19,7 @@ export class BackendApiClient {
     public readonly auth: AuthApiClient;
 
     constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
-    // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
+        // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -466,6 +467,19 @@ export class BackendApiClient {
             return plainToInstance(KundliCharts, response.data);
         } catch (error) {
             console.error("Failed to fetch Profile Kundli charts:", error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get all user sitemaps across users
+     */
+    async getAllSitemaps(): Promise<UserSitemap[]> {
+        try {
+            const response = await this.client.get('/admin/location/sitemaps');
+            return plainToInstance(UserSitemap, response.data as any[]);
+        } catch (error) {
+            console.error("Failed to fetch all user sitemaps:", error);
             throw error;
         }
     }
