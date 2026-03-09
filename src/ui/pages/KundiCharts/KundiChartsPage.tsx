@@ -60,12 +60,26 @@ const KundiChartsPage: React.FC = () => {
             {charts && !loading && (
                 <Grid container spacing={4}>
                     {[
-                        { key: 'birth', label: 'Birth' },
+                        { key: 'birth', label: 'Birth/Lagna' },
+                        { key: 'd2', label: 'Hora' },
+                        { key: 'd3', label: 'Dreshkan' },
+                        { key: 'd4', label: 'Chaturthamsha' },
+                        { key: 'd7', label: 'Saptamansha' },
                         { key: 'navamsha', label: 'Navamsha' },
-                        { key: 'chalit', label: 'Chalit' },
+                        { key: 'dashamsha', label: 'Dashamansha' },
+                        { key: 'd12', label: 'Dwadashamsha' },
+                        { key: 'd16', label: 'Shodashamsha' },
+                        { key: 'd20', label: 'Vishamansha' },
+                        { key: 'd24', label: 'Chaturvimshamsha' },
+                        { key: 'd27', label: 'Bhamsha)' },
+                        { key: 'd30', label: 'Trishamansha' },
+                        { key: 'd40', label: 'Khavedamsha' },
+                        { key: 'd45', label: 'Akshvedansha' },
+                        { key: 'd60', label: 'Shashtyamsha' },
                         { key: 'moon', label: 'Moon' },
                         { key: 'sun', label: 'Sun' },
-                        { key: 'dashamsha', label: 'Dashamsha' },
+                        { key: 'chalit', label: 'Chalit' },
+                        { key: 'cuspal', label: 'Cuspal' },
                     ].map(({ key, label }) => {
                         const svg = (charts as any)[key];
                         if (!svg) return null;
