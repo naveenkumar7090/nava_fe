@@ -311,7 +311,7 @@ const BookingDetails = () => {
                             </Button>
                         </>
                     )}
-                    {(booking.status === 'yet_to_mark') && (
+                    {(new Date(Date.now()) > booking.scheduledStartTime! && booking.status === 'upcoming') && (
                         <>
                             <Button
                                 variant="contained"
