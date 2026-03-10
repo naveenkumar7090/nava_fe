@@ -40,8 +40,21 @@ export const useUserSitemapsViewModel = () => {
         );
     }, [sitemaps, searchTerm]);
 
+    const statistics = useMemo(() => {
+        const total = sitemaps.length;
+        const pending = sitemaps.filter(s => !s.report.url).length;
+        const completed = sitemaps.filter(s => !!s.report.url).length;
+
+        return {
+            totalSitemaps: total,
+            pendingReports: pending,
+            completedReports: completed,
+        };
+    }, [sitemaps]);
+
     return {
         sitemaps: filteredSitemaps,
+        statistics,
         loading,
         error,
         searchTerm,
