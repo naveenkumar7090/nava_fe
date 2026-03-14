@@ -217,5 +217,9 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 alert('Failed to view PDF. Please try again.');
             }
         },
+        viewWhitelabelKundaliPDF: (profileId: number) => {
+            const url = apiClient.getWhitelabelKundaliPDFUrl(profileId);
+            window.open(url, '_blank');
+        },
     };
 };

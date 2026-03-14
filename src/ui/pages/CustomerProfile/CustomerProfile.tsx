@@ -63,6 +63,13 @@ const CustomerProfile = () => {
     }
   };
 
+  const handleViewWhitelabelKundliPDF = () => {
+    if (profile) {
+      const url = backendApiClient.getWhitelabelKundaliPDFUrl(profile.id);
+      window.open(url, '_blank');
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#f8f9fa' }}>
@@ -146,14 +153,30 @@ const CustomerProfile = () => {
                     )}
                   </Stack>
 
-                  <Button
-                    startIcon={<Star />}
-                    variant="contained"
-                    onClick={handleViewKundli}
-                    sx={{ mt: 2 }}
-                  >
-                    View Kundli
-                  </Button>
+                  <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                    <Button
+                      startIcon={<Star />}
+                      variant="contained"
+                      onClick={handleViewKundli}
+                    >
+                      View Kundli
+                    </Button>
+                    <Button
+                      startIcon={<PictureAsPdf />}
+                      variant="outlined"
+                      onClick={handleViewWhitelabelKundliPDF}
+                      sx={{
+                        borderColor: '#dc2626',
+                        color: '#dc2626',
+                        '&:hover': {
+                          borderColor: '#b91c1c',
+                          backgroundColor: '#fef2f2'
+                        }
+                      }}
+                    >
+                      View Full Kundli PDF
+                    </Button>
+                  </Stack>
                 </Box>
               </Stack>
 

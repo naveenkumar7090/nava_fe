@@ -15,6 +15,7 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Stack,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -71,6 +72,16 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   const handleViewKundli = () => {
     if (account) {
       navigate(`/kundli-charts?userId=${account.id}`);
+    }
+  };
+
+  const handleViewWhitelabelKundliPDF = () => {
+    const defaultProfile = profiles.find(p => p.isDefault);
+    if (defaultProfile) {
+      const url = apiClient.getWhitelabelKundaliPDFUrl(defaultProfile.id);
+      window.open(url, '_blank');
+    } else {
+      alert('Default profile not found for this account.');
     }
   };
 
@@ -703,20 +714,36 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   <Typography variant="h5" fontWeight="bold" sx={{ color: 'white', mb: 1 }}>
                     {accountData.name}
                   </Typography>
-                  <Button
-                    startIcon={<Star />}
-                    onClick={handleViewKundli}
-                    variant="contained"
-                    sx={{
-                      backgroundColor: 'rgba(255,255,255,0.2)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.3)'
-                      }
-                    }}
-                  >
-                    View Kundli
-                  </Button>
+                  <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
+                    <Button
+                      startIcon={<Star />}
+                      onClick={handleViewKundli}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.3)'
+                        }
+                      }}
+                    >
+                      View Kundli
+                    </Button>
+                    <Button
+                      startIcon={<PictureAsPdf />}
+                      onClick={handleViewWhitelabelKundliPDF}
+                      variant="contained"
+                      sx={{
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(255,255,255,0.3)'
+                        }
+                      }}
+                    >
+                      View Full Kundli PDF
+                    </Button>
+                  </Stack>
                 </Box>
               </Box>
 

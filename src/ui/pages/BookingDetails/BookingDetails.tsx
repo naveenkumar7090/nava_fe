@@ -57,6 +57,7 @@ const BookingDetails = () => {
         loadingPDFs,
         downloadPDF,
         rescheduleState,
+        viewWhitelabelKundaliPDF,
     } = useBookingDetailsViewModel(id ? parseInt(id) : null);
 
     const handleBack = () => {
@@ -92,7 +93,7 @@ const BookingDetails = () => {
         if (s === 'cancelled' || s === 'noshow') return 'error';
         return 'default';
     };
-    
+
     const buildAccountCard = () => {
         return (
             <Card sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
@@ -138,7 +139,7 @@ const BookingDetails = () => {
                                 {booking.preferredLanguage}
                             </Typography>
                         </Box>
-                        
+
                         <Button variant="contained" onClick={() => navigate(`/kundli-charts?userId=${booking.account.userId}`)}>
                             View Kundli
                         </Button>
@@ -147,7 +148,7 @@ const BookingDetails = () => {
             </Card>
         );
     };
-    
+
     const buildUserProfileCard = () => {
         return (
             <Card sx={{ mb: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
@@ -241,19 +242,34 @@ const BookingDetails = () => {
                             </Typography>
                         </Box>
                     )}
-                    
+
                     {booking.profile && (
                         <>
                             <Divider sx={{ my: 2 }} />
 
-                            <Stack py={1} direction="row" justifyContent="end" alignItems="center">
+                            <Stack py={1} direction="row" justifyContent="end" alignItems="center" spacing={2}>
                                 <Button variant="contained" onClick={() => navigate(`/kundli-charts?profileId=${booking.profile!.id}`)}>
                                     View Kundli
+                                </Button>
+                                <Button
+                                    variant="outlined"
+                                    startIcon={<PictureAsPdf />}
+                                    onClick={() => viewWhitelabelKundaliPDF(booking.profile!.id)}
+                                    sx={{
+                                        borderColor: '#dc2626',
+                                        color: '#dc2626',
+                                        '&:hover': {
+                                            borderColor: '#b91c1c',
+                                            backgroundColor: '#fef2f2'
+                                        }
+                                    }}
+                                >
+                                    View Full Kundli PDF
                                 </Button>
                             </Stack>
                         </>
                     )}
-                    
+
                 </CardContent>
             </Card>
         );

@@ -459,6 +459,38 @@ export class BackendApiClient {
     }
 
     /**
+     * Get Whitelabel Kundali PDF data (binary)
+     */
+    async getWhitelabelKundaliPDFBlob(profileId: number): Promise<Blob> {
+        const response = await this.client.get(`/admin/astro/profiles/${profileId}/kundli/pdf`, {
+            responseType: 'blob'
+        });
+        return response.data;
+    }
+
+    /**
+     * View Whitelabel Kundali PDF in a new tab
+     */
+    async viewWhitelabelKundaliPDF(profileId: number): Promise<void> {
+        try {
+            const blob = await this.getWhitelabelKundaliPDFBlob(profileId);
+            const url = window.URL.createObjectURL(blob);
+            window.open(url, '_blank');
+        } catch (error) {
+            console.error(`Failed to view Whitelabel Kundali PDF for profile ${profileId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Get Whitelabel Kundali PDF URL
+     */
+    getWhitelabelKundaliPDFUrl(profileId: number): string {
+        const baseUrl = this.client.defaults.baseURL || '';
+        return `${baseUrl.replace(/\/$/, '')}/admin/astro/profiles/${profileId}/kundli/pdf`;
+    }
+
+    /**
      * Get Kundli charts for a user profile
      */
     async getProfileKundliCharts(profileId: number): Promise<KundliCharts> {
