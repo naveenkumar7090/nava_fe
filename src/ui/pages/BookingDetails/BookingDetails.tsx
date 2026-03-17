@@ -237,7 +237,17 @@ const BookingDetails = () => {
                                     Vastu Location
                                 </Typography>
                             </Stack>
-                            <Typography variant="body1" fontWeight="500" sx={{ pl: 3.5 }}>
+                            <Typography 
+                                variant="body1" 
+                                fontWeight="500"
+                                sx={{
+                                    pl: 3.5,
+                                    cursor: 'pointer',
+                                    color: 'primary.main',
+                                    '&:hover': { textDecoration: 'underline' }
+                                }}
+                                onClick={() => navigate(`/user-location/${booking.location?.id}`)}
+                            >
                                 {booking.location.name}
                             </Typography>
                         </Box>
