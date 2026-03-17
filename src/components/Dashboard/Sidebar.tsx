@@ -55,13 +55,6 @@ const menuItems: {
       roles: ['superadmin', 'admin', 'consultant'],
     },
     {
-      id: 'cms',
-      label: 'CMS',
-      icon: <Article />,
-      path: '/cms',
-      roles: ['superadmin', 'content_creator'],
-    },
-    {
       id: 'consultants',
       label: 'Consultants',
       icon: <People />,
