@@ -327,7 +327,7 @@ const BookingDetails = () => {
                             </Button>
                         </>
                     )}
-                    {(new Date(Date.now()) > booking.scheduledStartTime! && booking.status === 'upcoming') && (
+                    {((booking.status.toLowerCase() === 'upcoming' && new Date(Date.now()) > booking.scheduledStartTime!) || booking.status.toLowerCase() === "yet_to_mark") && (
                         <>
                             <Button
                                 variant="contained"
