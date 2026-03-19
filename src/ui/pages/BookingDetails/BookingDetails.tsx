@@ -33,13 +33,14 @@ import {
     LocationOn,
     Person,
     Save,
-    Link,
+    Link as LinkIcon,
     EditCalendar,
     Download,
     PictureAsPdf,
     TrendingUp
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
+import { Link } from 'react-router-dom';
 
 const BookingDetails = () => {
     const { id } = useParams<{ id: string }>();
@@ -140,9 +141,9 @@ const BookingDetails = () => {
                             </Typography>
                         </Box>
 
-                        <Button variant="contained" onClick={() => navigate(`/kundli-charts?userId=${booking.account.userId}`)}>
-                            View Kundli
-                        </Button>
+                        <Link to={`/kundli-charts?userId=${booking.account.userId}`} target="_blank" rel="noopener noreferral">
+                            <Button variant="contained">View Kundli</Button>
+                        </Link>
                     </Stack>
                 </CardContent>
             </Card>
@@ -258,9 +259,9 @@ const BookingDetails = () => {
                             <Divider sx={{ my: 2 }} />
 
                             <Stack py={1} direction="row" justifyContent="end" alignItems="center" spacing={2}>
-                                <Button variant="contained" onClick={() => navigate(`/kundli-charts?profileId=${booking.profile!.id}`)}>
-                                    View Kundli
-                                </Button>
+                                <Link to={`/kundli-charts?profileId=${booking.profile!.id}`} target="_blank" rel="noopener noreferral">
+                                    <Button variant="contained">View Kundli</Button>
+                                </Link>
                                 <Button
                                     variant="outlined"
                                     startIcon={<PictureAsPdf />}
@@ -440,7 +441,7 @@ const BookingDetails = () => {
                                     <Button
                                         variant="outlined"
                                         color="primary"
-                                        startIcon={<Link />}
+                                        startIcon={<LinkIcon />}
                                         href={booking.meetingLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
