@@ -238,8 +238,8 @@ const BookingDetails = () => {
                                     Vastu Location
                                 </Typography>
                             </Stack>
-                            <Typography 
-                                variant="body1" 
+                            <Typography
+                                variant="body1"
                                 fontWeight="500"
                                 sx={{
                                     pl: 3.5,

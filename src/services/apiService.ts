@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Base API configuration - External API for account/profile data
-const API_BASE_URL = 'http://13.235.0.135:3000';
+const API_BASE_URL = 'http://3.6.212.165:3000';
 const AUTH_TOKEN = 'admin_access_token';
 
 // Create axios instance with default headers

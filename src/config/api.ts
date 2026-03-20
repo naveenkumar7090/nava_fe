@@ -1,14 +1,14 @@
 // API Configuration
 export const API_CONFIG = {
   // Use environment variable if available, otherwise use production URL
-  BASE_URL: process.env.REACT_APP_API_URL || 'http://13.235.0.135:3000',
+  BASE_URL: process.env.REACT_APP_API_URL || 'http://3.6.212.165:3000',
   
   // Development fallback
   DEV_URL: 'http://localhost:8000',
   
   // External API configuration (for direct calls if needed)
   EXTERNAL_API: {
-    BASE_URL: 'http://13.235.0.135:3000',
+    BASE_URL: 'http://3.6.212.165:3000',
     AUTH_TOKEN: 'admin_access_token'
   },
   
