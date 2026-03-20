@@ -520,10 +520,10 @@ const BookingDetails = () => {
                                                     fullWidth
                                                 />
                                                 <TextField
-                                                    label="Suggestions"
+                                                    label="Remedies"
                                                     multiline rows={4}
-                                                    value={remedyData.suggestions}
-                                                    onChange={(e) => handleRemedyInputChange('suggestions', e.target.value)}
+                                                    value={remedyData.remedies}
+                                                    onChange={(e) => handleRemedyInputChange('remedies', e.target.value)}
                                                     fullWidth
                                                 />
                                             </Stack>

@@ -41,7 +41,7 @@ export const useUserLocationDetailsViewModel = () => {
                 completedBookings.map(async (booking) => {
                     try {
                         const remedy = await backendApiClient.getRemedyData(booking.id);
-                        if (remedy && (remedy.problems || remedy.diagnosis || remedy.suggestions || remedy.products || remedy.reminders)) {
+                        if (remedy && (remedy.problems || remedy.diagnosis || remedy.remedies || remedy.products || remedy.reminders)) {
                             remedyMap.set(booking.id, remedy);
                         }
                     } catch (err) {

@@ -11,7 +11,7 @@ export class RemedyData {
 
     @IsOptional()
     @IsString()
-    suggestions?: string;
+    remedies?: string;
 
     @IsOptional()
     @IsString()

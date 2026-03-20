@@ -12,7 +12,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
     const [remedyData, setRemedyData] = useState<RemedyData>({
         problems: '',
         diagnosis: '',
-        suggestions: '',
+        remedies: '',
         products: '',
         reminders: '',
     });
@@ -51,7 +51,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                             // Merge and handle potential nulls/undefined from backend
                             problems: existingRemedy.problems || '',
                             diagnosis: existingRemedy.diagnosis || '',
-                            suggestions: existingRemedy.suggestions || '',
+                            remedies: existingRemedy.remedies || '',
                             products: existingRemedy.products || '',
                             reminders: existingRemedy.reminders || '',
                         }));
@@ -158,7 +158,7 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         saveRemedyData: async () => {
             if (!bookingId) return;
 
-            const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.suggestions || remedyData.products || remedyData.reminders;
+            const hasContent = remedyData.problems || remedyData.diagnosis || remedyData.remedies || remedyData.products || remedyData.reminders;
             if (!hasContent) {
                 alert('Please fill in at least one field before saving.');
                 return;
