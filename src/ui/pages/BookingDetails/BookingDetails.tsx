@@ -383,10 +383,7 @@ const BookingDetails = () => {
                                 </Avatar>
                                 <Box>
                                     <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
-                                        {booking.service?.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
-                                        {booking.consultationType} Consultation
+                                        {booking.consultationType.toUpperCase()} CONSULTATION 
                                     </Typography>
                                 </Box>
                             </Box>
@@ -495,7 +492,7 @@ const BookingDetails = () => {
                     )}
 
                     {/* Remedy Form */}
-                    {booking && (
+                    {booking && (booking.status.toLowerCase() !== 'upcoming' && booking.status.toLowerCase() !== 'cancelled' || (booking.status.toLowerCase() === 'upcoming' && booking.scheduledStartTime && new Date() >= booking.scheduledStartTime)) && (
                         <>
                             <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                                 <CardContent sx={{ p: 3 }}>
