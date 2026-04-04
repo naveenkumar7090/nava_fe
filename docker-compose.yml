@@ -3,4 +3,4 @@ services:
     container_name: nava_admin
     image: nava_admin
     ports:
-      - "4001:4001"
+      - "3001:3001"
