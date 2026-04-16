@@ -94,13 +94,4 @@ export class UserLocation {
         sitemapPdf: string;
         reportPdf: string;
     };
-
-    @IsOptional()
-    @ValidateNested()
-    @Type(() => Object)
-    userLocationMap?: {
-        id: number;
-    };
 }
-
-

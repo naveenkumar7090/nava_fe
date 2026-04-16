@@ -18,9 +18,9 @@ export class BackendApiClient {
     private client: AxiosInstance;
     public readonly auth: AuthApiClient;
 
-    // constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
+    constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
     // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
-    constructor(readonly baseURL: string = "http://3.6.212.165:4000", authToken: string = "admin_access_token") {
+    // constructor(readonly baseURL: string = "http://3.6.212.165:4000", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -377,25 +377,59 @@ export class BackendApiClient {
     // ==================== Location Map PDF Endpoints ====================
 
     /**
-     * Upload a map PDF file directly to the database
+     * Get a presigned URL for uploading a map report PDF to S3
      */
-    async uploadMapPdf(userLocationId: number, file: File): Promise<{
-        id: number;
-        fileName: string;
-        fileSize: number;
-        mimeType: string;
-        createdAt: string;
-        updatedAt: string;
-    }> {
+    async getReportUploadUrl(userLocationId: number, fileName: string, mimeType: string): Promise<{ uploadUrl: string, key: string }> {
         try {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            const response = await this.client.post(`/admin/location/${userLocationId}/map/upload`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
+            const response = await this.client.get(`/admin/location/${userLocationId}/map/upload-url`, {
+                params: { fileName, mimeType }
             });
+            return response.data;
+        } catch (error) {
+            console.error(`Failed to get report upload URL for location ${userLocationId}:`, error);
+            throw error;
+        }
+    }
+
+    /**
+     * Upload a map PDF file using S3 presigned URLs
+     */
+    async uploadMapPdf(userLocationId: number, file: File): Promise<any> {
+        try {
+            // 1. Get presigned upload URL from backend
+            const { uploadUrl, key } = await this.getReportUploadUrl(userLocationId, file.name, file.type);
+
+            // 2. Upload the file directly to S3
+            // Use fetch to bypass any global axios interceptors/defaults (like Auth headers)
+            console.log(`📤 Uploading to S3: ${uploadUrl}`);
+            try {
+                const uploadResponse = await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type || 'application/pdf',
+                    },
+                    mode: 'cors', // Explicitly request CORS mode
+                });
+
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    console.error('❌ S3 Upload Error Response:', errorText);
+                    throw new Error(`S3 upload failed with status: ${uploadResponse.status}. ${errorText}`);
+                }
+            } catch (fetchError: any) {
+                console.error('❌ Fetch failed (likely CORS or Network):', fetchError);
+                throw fetchError;
+            }
+
+            // 3. Confirm the upload with the backend
+            const response = await this.client.post(`/admin/location/${userLocationId}/map/upload`, {
+                fileName: file.name,
+                s3Key: key,
+                fileSize: file.size,
+                mimeType: file.type,
+            });
+
             return response.data;
         } catch (error) {
             console.error(`Failed to upload map PDF for location ${userLocationId}:`, error);

@@ -148,7 +148,7 @@ const UserLocationDetails: React.FC = () => {
                                 </Typography>
 
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    {location.userLocationMap ? (
+                                    {location.sitemap?.reportPdf ? (
                                         <Box sx={{ p: 2, backgroundColor: '#f0f9ff', borderRadius: 1, border: '1px solid #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                 <Description fontSize="small" sx={{ color: '#0369a1' }} />
@@ -159,7 +159,7 @@ const UserLocationDetails: React.FC = () => {
                                             <Button
                                                 size="small"
                                                 startIcon={<Download />}
-                                                onClick={() => downloadMap(location.userLocationMap!.id, `Report_${location.locationName}.pdf`)}
+                                                onClick={() => downloadMap(location.sitemap!.id, `Report_${location.locationName}.pdf`)}
                                             >
                                                 View
                                             </Button>
@@ -175,7 +175,7 @@ const UserLocationDetails: React.FC = () => {
                                         disabled={uploading}
                                         fullWidth
                                     >
-                                        {uploading ? 'Uploading...' : location.userLocationMap ? 'Update Report' : 'Upload Report'}
+                                        {uploading ? 'Uploading...' : location.sitemap?.reportPdf ? 'Update Report' : 'Upload Report'}
                                         <VisuallyHiddenInput type="file" accept="application/pdf" onChange={handleFileUpload} />
                                     </Button>
                                 </Box>
