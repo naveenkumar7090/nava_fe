@@ -40,6 +40,17 @@ export class UserLocationFloor {
     data?: any; // Vastu report data
 }
 
+export class UserLocationSitemap {
+    @IsNumber()
+    id!: number;
+
+    @IsString()
+    sitemapPdf!: string;
+
+    @IsString()
+    reportPdf!: string;
+}
+
 export class UserLocation {
     @IsNumber()
     id!: number;
@@ -88,10 +99,6 @@ export class UserLocation {
 
     @IsOptional()
     @ValidateNested()
-    @Type(() => Object)
-    sitemap?: {
-        id: number;
-        sitemapPdf: string;
-        reportPdf: string;
-    };
+    @Type(() => UserLocationSitemap)
+    sitemap?: UserLocationSitemap;
 }

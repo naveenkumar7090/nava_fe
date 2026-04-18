@@ -204,22 +204,24 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
             if (!bookingId) return;
 
             try {
-                const downloadUrl = pdf.file_url || `/admin/consultation/${bookingId}/remedy/pdf`;
+                if (pdf.file_url) {
+                    window.open(pdf.file_url, '_blank');
+                    return;
+                }
 
-                const baseUrl = apiClient.baseURL;
-                const fullUrl = downloadUrl.startsWith('http')
-                    ? downloadUrl
-                    : `${baseUrl.replace(/\/$/, '')}${downloadUrl}`;
-
-                window.open(fullUrl, '_blank');
+                await apiClient.viewRemedyPDF(bookingId);
             } catch (error) {
                 console.error('❌ Error viewing PDF:', error);
                 alert('Failed to view PDF. Please try again.');
             }
         },
-        viewWhitelabelKundaliPDF: (profileId: number) => {
-            const url = apiClient.getWhitelabelKundaliPDFUrl(profileId);
-            window.open(url, '_blank');
+        viewWhitelabelKundaliPDF: async (profileId: number) => {
+            try {
+                await apiClient.viewWhitelabelKundaliPDF(profileId);
+            } catch (error) {
+                console.error('❌ Error viewing Kundli PDF:', error);
+                alert('Failed to view Kundli PDF. Please try again.');
+            }
         },
     };
 };

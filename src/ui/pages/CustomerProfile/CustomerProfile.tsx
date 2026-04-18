@@ -63,10 +63,14 @@ const CustomerProfile = () => {
     }
   };
 
-  const handleViewWhitelabelKundliPDF = () => {
+  const handleViewWhitelabelKundaliPDF = async () => {
     if (profile) {
-      const url = backendApiClient.getWhitelabelKundaliPDFUrl(profile.id);
-      window.open(url, '_blank');
+      try {
+        await backendApiClient.viewWhitelabelKundaliPDF(profile.id);
+      } catch (error) {
+        console.error('❌ Error viewing Kundli PDF:', error);
+        alert('Error viewing Kundli PDF. Please try again.');
+      }
     }
   };
 
@@ -164,7 +168,7 @@ const CustomerProfile = () => {
                     <Button
                       startIcon={<PictureAsPdf />}
                       variant="outlined"
-                      onClick={handleViewWhitelabelKundliPDF}
+                      onClick={handleViewWhitelabelKundaliPDF}
                       sx={{
                         borderColor: '#dc2626',
                         color: '#dc2626',

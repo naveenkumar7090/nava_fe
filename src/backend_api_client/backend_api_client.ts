@@ -299,8 +299,12 @@ export class BackendApiClient {
         try {
             const blob = await this.getRemedyPDFBlob(consultationId);
             const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            // We don't revoke the URL immediately because it's needed for the new tab
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } catch (error) {
             console.error(`Failed to view remedy PDF for consultation ${consultationId}:`, error);
             throw error;
@@ -510,7 +514,12 @@ export class BackendApiClient {
         try {
             const blob = await this.getWhitelabelKundaliPDFBlob(profileId);
             const url = window.URL.createObjectURL(blob);
-            window.open(url, '_blank');
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         } catch (error) {
             console.error(`Failed to view Whitelabel Kundali PDF for profile ${profileId}:`, error);
             throw error;
