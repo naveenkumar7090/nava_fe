@@ -66,13 +66,8 @@ const UserLocationDetails: React.FC = () => {
         }
     };
 
-    const handleViewRemedyPDF = async (booking: Booking) => {
-        try {
-            await backendApiClient.viewRemedyPDF(booking.id);
-        } catch (error) {
-            console.error('❌ Error viewing PDF:', error);
-            alert('Error viewing PDF. Please try again.');
-        }
+    const handleViewRemedyPDF = (booking: Booking) => {
+        backendApiClient.viewRemedyPDF(booking.id);
     };
 
     if (loading) {

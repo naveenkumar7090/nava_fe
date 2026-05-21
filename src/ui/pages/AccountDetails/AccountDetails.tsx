@@ -78,8 +78,7 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
   const handleViewWhitelabelKundliPDF = () => {
     const defaultProfile = profiles.find(p => p.isDefault);
     if (defaultProfile) {
-      const url = apiClient.getWhitelabelKundaliPDFUrl(defaultProfile.id);
-      window.open(url, '_blank');
+      apiClient.viewWhitelabelKundaliPDF(defaultProfile.id);
     } else {
       alert('Default profile not found for this account.');
     }
@@ -285,7 +284,6 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
         moonSign: getSignName(account.moonSign),
         email: account.email || 'Not specified',
         phone: account.mobile || 'Not specified',
-        address: 'Not specified', // Address not available in new API model
         gender: account.gender || 'Not specified',
         associatedProfiles: profiles.map(profile => ({
           id: profile.id,
@@ -344,7 +342,6 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
       moonSign: 'Not specified',
       email: 'Not specified',
       phone: 'Not specified',
-      address: 'Not specified',
       gender: 'Not specified',
       associatedProfiles: [],
       vastuStates: [],
@@ -813,15 +810,6 @@ const AccountDetails: React.FC<AccountDetailsProps> = () => {
                   </Typography>
                   <Typography variant="body1" fontWeight="500">
                     {accountData.phone}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
-                    Address
-                  </Typography>
-                  <Typography variant="body1" fontWeight="500">
-                    {accountData.address}
                   </Typography>
                 </Box>
 

@@ -48,13 +48,8 @@ const CustomerProfile = () => {
     navigate(-1);
   };
 
-  const handleViewRemedyPDF = async (booking: Booking) => {
-    try {
-      await backendApiClient.viewRemedyPDF(booking.id);
-    } catch (error) {
-      console.error('❌ Error viewing PDF:', error);
-      alert('Error viewing PDF. Please try again.');
-    }
+  const handleViewRemedyPDF = (booking: Booking) => {
+    backendApiClient.viewRemedyPDF(booking.id);
   };
 
   const handleViewKundli = () => {
@@ -63,14 +58,9 @@ const CustomerProfile = () => {
     }
   };
 
-  const handleViewWhitelabelKundaliPDF = async () => {
+  const handleViewWhitelabelKundaliPDF = () => {
     if (profile) {
-      try {
-        await backendApiClient.viewWhitelabelKundaliPDF(profile.id);
-      } catch (error) {
-        console.error('❌ Error viewing Kundli PDF:', error);
-        alert('Error viewing Kundli PDF. Please try again.');
-      }
+      backendApiClient.viewWhitelabelKundaliPDF(profile.id);
     }
   };
 

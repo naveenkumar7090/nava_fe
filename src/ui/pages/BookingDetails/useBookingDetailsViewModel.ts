@@ -18,9 +18,9 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
     });
     const [isSaving, setIsSaving] = useState(false);
 
-    // Saved PDFs State
-    const [savedPDFs, setSavedPDFs] = useState<Array<{ id: number; name: string; date: string; file_url?: string }>>([]);
-    const [loadingPDFs, setLoadingPDFs] = useState(false);
+    // Saved PDF State
+    const [remedyPDF, setRemedyPDF] = useState<{ id: number; name: string; date: string; file_url?: string; is_up_to_date?: boolean } | null>(null);
+    const [loadingPDF, setLoadingPDF] = useState(false);
 
     const apiClient = useMemo(() => new BackendApiClient(), []);
 
@@ -60,16 +60,16 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                     console.log("No existing remedy found or failed to fetch", remedyError);
                 }
 
-                // Fetch saved PDFs
+                // Fetch remedy PDF info
                 try {
-                    setLoadingPDFs(true);
-                    const pdfs = await apiClient.getSavedRemedyPDFs(bookingId);
-                    setSavedPDFs(pdfs);
+                    setLoadingPDF(true);
+                    const pdf = await apiClient.getRemedyPDFInfo(bookingId);
+                    setRemedyPDF(pdf);
                 } catch (pdfError) {
-                    console.log("No saved PDFs found or failed to fetch", pdfError);
-                    setSavedPDFs([]);
+                    console.log("No remedy PDF found or failed to fetch", pdfError);
+                    setRemedyPDF(null);
                 } finally {
-                    setLoadingPDFs(false);
+                    setLoadingPDF(false);
                 }
 
             } catch (err) {
@@ -104,8 +104,8 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
         error,
         remedyData,
         isSaving,
-        savedPDFs,
-        loadingPDFs,
+        remedyPDF,
+        loadingPDF,
         rescheduleState: {
             open: rescheduleDialogOpen,
             selectedDate,
@@ -170,12 +170,11 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                 await apiClient.updateRemedyData(bookingId, remedyData);
                 alert('Remedy data saved successfully!');
 
-                // Refresh saved PDFs list after saving
                 try {
-                    const pdfs = await apiClient.getSavedRemedyPDFs(bookingId);
-                    setSavedPDFs(pdfs);
+                    const pdf = await apiClient.getRemedyPDFInfo(bookingId);
+                    setRemedyPDF(pdf);
                 } catch (pdfError) {
-                    console.log("Failed to refresh PDFs list", pdfError);
+                    console.log("Failed to refresh PDF info", pdfError);
                 }
             } catch (error) {
                 console.error('❌ Error saving remedy data:', error);
@@ -209,19 +208,14 @@ export const useBookingDetailsViewModel = (bookingId: number | null) => {
                     return;
                 }
 
-                await apiClient.viewRemedyPDF(bookingId);
+                apiClient.viewRemedyPDF(bookingId);
             } catch (error) {
                 console.error('❌ Error viewing PDF:', error);
                 alert('Failed to view PDF. Please try again.');
             }
         },
-        viewWhitelabelKundaliPDF: async (profileId: number) => {
-            try {
-                await apiClient.viewWhitelabelKundaliPDF(profileId);
-            } catch (error) {
-                console.error('❌ Error viewing Kundli PDF:', error);
-                alert('Failed to view Kundli PDF. Please try again.');
-            }
+        viewWhitelabelKundaliPDF: (profileId: number) => {
+            apiClient.viewWhitelabelKundaliPDF(profileId);
         },
     };
 };

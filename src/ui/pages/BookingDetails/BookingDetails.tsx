@@ -37,7 +37,8 @@ import {
     EditCalendar,
     Download,
     PictureAsPdf,
-    TrendingUp
+    TrendingUp,
+    Refresh
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
 import { Link } from 'react-router-dom';
@@ -54,8 +55,8 @@ const BookingDetails = () => {
         isSaving,
         saveRemedyData,
         updateStatus,
-        savedPDFs,
-        loadingPDFs,
+        remedyPDF,
+        loadingPDF,
         downloadPDF,
         rescheduleState,
         viewWhitelabelKundaliPDF,
@@ -557,79 +558,54 @@ const BookingDetails = () => {
                                     </Box>
                                 </CardContent>
                             </Card>
-
-                            {/* Saved PDFs List */}
+                            {/* Remedy PDF Section */}
                             <Card sx={{ mt: 3, borderRadius: 3, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
                                 <CardContent sx={{ p: 3 }}>
                                     <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <PictureAsPdf color="error" />
-                                        Saved Remedy PDFs
+                                        Remedy Report PDF
                                     </Typography>
 
-                                    {loadingPDFs ? (
+                                    {loadingPDF ? (
                                         <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
                                             <CircularProgress size={24} />
                                         </Box>
-                                    ) : savedPDFs.length === 0 ? (
+                                    ) : !remedyPDF ? (
                                         <Alert severity="info" sx={{ mt: 2 }}>
-                                            No saved PDFs found. Save remedy data to generate PDFs.
+                                            No remedy PDF generated yet. Fill the data above and save to generate it.
                                         </Alert>
                                     ) : (
-                                        <List sx={{ mt: 2 }}>
-                                            {savedPDFs.map((pdf, index) => (
-                                                <React.Fragment key={pdf.id}>
-                                                    <ListItem
-                                                        disablePadding
-                                                        sx={{
-                                                            py: 1.5,
-                                                            px: 2,
-                                                            borderRadius: 1,
-                                                            '&:hover': {
-                                                                bgcolor: '#f5f5f5',
-                                                                cursor: 'pointer'
-                                                            }
-                                                        }}
-                                                        onClick={() => downloadPDF(pdf)}
-                                                    >
-                                                        <ListItemButton>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-                                                                <PictureAsPdf sx={{ color: '#dc2626', fontSize: 32 }} />
-                                                                <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                                    <Typography variant="subtitle1" fontWeight="600" noWrap>
-                                                                        {pdf.name}
-                                                                    </Typography>
-                                                                    <Typography variant="body2" color="text.secondary">
-                                                                        {new Date(pdf.date).toLocaleDateString(undefined, {
-                                                                            year: 'numeric',
-                                                                            month: 'long',
-                                                                            day: 'numeric',
-                                                                            hour: '2-digit',
-                                                                            minute: '2-digit'
-                                                                        })}
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Button
-                                                                    variant="outlined"
-                                                                    size="small"
-                                                                    startIcon={<Download />}
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        downloadPDF(pdf);
-                                                                    }}
-                                                                    sx={{
-                                                                        ml: 'auto',
-                                                                        textTransform: 'none'
-                                                                    }}
-                                                                >
-                                                                    Download
-                                                                </Button>
-                                                            </Box>
-                                                        </ListItemButton>
-                                                    </ListItem>
-                                                    {index < savedPDFs.length - 1 && <Divider />}
-                                                </React.Fragment>
-                                            ))}
-                                        </List>
+                                        <Box 
+                                            sx={{ 
+                                                mt: 2,
+                                                p: 2,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: 2,
+                                                border: '1px solid #e5e7eb',
+                                                borderRadius: 2,
+                                                bgcolor: '#f9fafb'
+                                            }}
+                                        >
+                                            <PictureAsPdf sx={{ color: '#dc2626', fontSize: 40 }} />
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="subtitle1" fontWeight="600">
+                                                    Remedy Report PDF
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Last updated: {new Date(remedyPDF.date).toLocaleString()}
+                                                </Typography>
+                                            </Box>
+                                            <Button
+                                                variant="contained"
+                                                color="primary"
+                                                startIcon={<Download />}
+                                                onClick={() => downloadPDF(remedyPDF)}
+                                                sx={{ textTransform: 'none' }}
+                                            >
+                                                View PDF
+                                            </Button>
+                                        </Box>
                                     )}
                                 </CardContent>
                             </Card>

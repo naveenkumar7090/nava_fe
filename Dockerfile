@@ -16,4 +16,4 @@ FROM nginx:mainline-alpine
 WORKDIR /var/www/html
 COPY ./nginx.conf /etc/nginx/nginx.conf
 COPY --from=builder /app/build/ .
-EXPOSE 4001
+EXPOSE 3001

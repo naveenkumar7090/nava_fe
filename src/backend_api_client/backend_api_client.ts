@@ -20,7 +20,8 @@ export class BackendApiClient {
 
     constructor(readonly baseURL: string = "http://localhost:3000", authToken: string = "admin_access_token") {
     // constructor(readonly baseURL: string = "http://13.235.0.135:3000", authToken: string = "admin_access_token") {
-    // constructor(readonly baseURL: string = "http://3.6.212.165:4000", authToken: string = "admin_access_token") {
+    // constructor(readonly baseURL: string = "http://3.6.212.165:3000", authToken: string = "admin_access_token") {
+    // constructor(readonly baseURL: string = "https://api.265degree.in", authToken: string = "admin_access_token") {
         this.client = axios.create({
             baseURL,
             headers: {
@@ -295,20 +296,9 @@ export class BackendApiClient {
     /**
      * View remedy PDF in a new tab
      */
-    async viewRemedyPDF(consultationId: number): Promise<void> {
-        try {
-            const blob = await this.getRemedyPDFBlob(consultationId);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error(`Failed to view remedy PDF for consultation ${consultationId}:`, error);
-            throw error;
-        }
+    viewRemedyPDF(consultationId: number): void {
+        const url = this.getRemedyPDFUrl(consultationId);
+        window.open(url, '_blank');
     }
 
     /**
@@ -321,33 +311,16 @@ export class BackendApiClient {
 
 
     /**
-     * Get list of saved remedy PDFs for a consultation
+     * Get remedy PDF info for a consultation
      */
-    async getSavedRemedyPDFs(consultationId: number): Promise<Array<{ id: number; name: string; date: string; file_url?: string }>> {
+    async getRemedyPDFInfo(consultationId: number): Promise<{ id: number; name: string; date: string; file_url?: string; is_up_to_date?: boolean } | null> {
         try {
-            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdfs`);
-            // Handle different response structures
-            if (response.data?.remedies) {
-                return response.data.remedies.map((remedy: any) => ({
-                    id: remedy.id,
-                    name: remedy.file_name || remedy.name || `remedy_${remedy.id}.pdf`,
-                    date: remedy.updated_at || remedy.created_at || new Date().toISOString(),
-                    file_url: remedy.file_url || `/admin/consultation/${consultationId}/remedy/pdf/${remedy.id}`
-                }));
-            } else if (Array.isArray(response.data)) {
-                return response.data.map((remedy: any) => ({
-                    id: remedy.id,
-                    name: remedy.file_name || remedy.name || `remedy_${remedy.id}.pdf`,
-                    date: remedy.updated_at || remedy.created_at || new Date().toISOString(),
-                    file_url: remedy.file_url || `/admin/consultation/${consultationId}/remedy/pdf/${remedy.id}`
-                }));
-            }
-            return [];
+            const response = await this.client.get(`/admin/consultation/${consultationId}/remedy/pdf-info`);
+            return response.data || null;
         } catch (error) {
-            console.error(`Failed to fetch saved PDFs for consultation ${consultationId}:`, error);
-            // Return empty array if no PDFs found (404 is expected for consultations without saved PDFs)
+            console.error(`Failed to fetch remedy PDF info for consultation ${consultationId}:`, error);
             if (axios.isAxiosError(error) && error.response?.status === 404) {
-                return [];
+                return null;
             }
             throw error;
         }
@@ -510,25 +483,19 @@ export class BackendApiClient {
     /**
      * View Whitelabel Kundali PDF in a new tab
      */
-    async viewWhitelabelKundaliPDF(profileId: number): Promise<void> {
-        try {
-            const blob = await this.getWhitelabelKundaliPDFBlob(profileId);
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        } catch (error) {
-            console.error(`Failed to view Whitelabel Kundali PDF for profile ${profileId}:`, error);
-            throw error;
-        }
+    viewWhitelabelKundaliPDF(profileId: number): void {
+        const url = this.getWhitelabelKundaliPDFUrl(profileId);
+        window.open(url, '_blank');
     }
 
     /**
      * Get Whitelabel Kundali PDF URL
      */
+    getRemedyPDFUrl(consultationId: number): string {
+        const baseUrl = this.client.defaults.baseURL || '';
+        return `${baseUrl.replace(/\/$/, '')}/admin/consultation/${consultationId}/remedy/pdf`;
+    }
+
     getWhitelabelKundaliPDFUrl(profileId: number): string {
         const baseUrl = this.client.defaults.baseURL || '';
         return `${baseUrl.replace(/\/$/, '')}/admin/astro/profiles/${profileId}/kundli/pdf`;
