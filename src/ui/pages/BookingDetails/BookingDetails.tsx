@@ -42,10 +42,13 @@ import {
 } from '@mui/icons-material';
 import { useBookingDetailsViewModel } from './useBookingDetailsViewModel';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const BookingDetails = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const canViewPrice = user?.role === 'superadmin' || user?.role === 'admin';
     const {
         booking,
         loading,
@@ -418,17 +421,19 @@ const BookingDetails = () => {
                                         </Typography>
                                     </Stack>
                                 </Grid>
-                                <Grid size={{ xs: 12, sm: 3 }}>
-                                    <Stack spacing={1}>
-                                        <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
-                                            <TrendingUp fontSize="small" />
-                                            <Typography variant="body2" fontWeight="500">Price</Typography>
+                                {canViewPrice && (
+                                    <Grid size={{ xs: 12, sm: 3 }}>
+                                        <Stack spacing={1}>
+                                            <Stack direction="row" spacing={1} alignItems="center" color="text.secondary">
+                                                <TrendingUp fontSize="small" />
+                                                <Typography variant="body2" fontWeight="500">Price</Typography>
+                                            </Stack>
+                                            <Typography variant="body1" fontWeight="600">
+                                                ₹{((booking.price || 0) / 100).toLocaleString()}
+                                            </Typography>
                                         </Stack>
-                                        <Typography variant="body1" fontWeight="600">
-                                            ₹{((booking.price || 0) / 100).toLocaleString()}
-                                        </Typography>
-                                    </Stack>
-                                </Grid>
+                                    </Grid>
+                                )}
                             </Grid>
 
                             {booking.meetingLink && (

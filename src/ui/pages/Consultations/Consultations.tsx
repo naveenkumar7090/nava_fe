@@ -29,9 +29,12 @@ import {
 } from '@mui/icons-material';
 
 import { useConsultationsViewModel } from './useConsultationsViewModel';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const ConsultationsTable: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const canViewPrice = user?.role === 'superadmin' || user?.role === 'admin';
 
   // Use the view model hook
   const {
@@ -75,13 +78,13 @@ const ConsultationsTable: React.FC = () => {
       bgColor: '#dbeafe',
       iconColor: '#3b82f6',
     },
-    {
+    ...(canViewPrice ? [{
       title: 'Total Revenue',
       value: `₹${statistics.totalRevenue.toLocaleString()}`,
       icon: <TrendingUp />,
       bgColor: '#f3e8ff',
       iconColor: '#a855f7',
-    },
+    }] : []),
   ];
 
 
@@ -350,21 +353,23 @@ const ConsultationsTable: React.FC = () => {
                 }}>
                   Booking Date & Time
                 </TableCell>
-                <TableCell sx={{
-                  fontWeight: 600,
-                  color: '#374151',
-                  fontSize: '1rem',
-                  py: 2.5,
-                  borderBottom: '1px solid #f0f0f0'
-                }}>
-                  Order Value
-                </TableCell>
+                {canViewPrice && (
+                  <TableCell sx={{
+                    fontWeight: 600,
+                    color: '#374151',
+                    fontSize: '1rem',
+                    py: 2.5,
+                    borderBottom: '1px solid #f0f0f0'
+                  }}>
+                    Order Value
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
               {filteredData.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} sx={{ textAlign: 'center', py: 4 }}>
+                  <TableCell colSpan={canViewPrice ? 9 : 8} sx={{ textAlign: 'center', py: 4 }}>
                     <Typography variant="body1" color="text.secondary">
                       {filteredData.length === 0 ? 'No bookings available' : 'No bookings match your search criteria'}
                     </Typography>
@@ -554,15 +559,17 @@ const ConsultationsTable: React.FC = () => {
                         hour12: true
                       })}
                     </TableCell>
-                    <TableCell sx={{
-                      fontSize: '1rem',
-                      color: '#111827',
-                      py: 2.5,
-                      borderBottom: '1px solid #f0f0f0',
-                      fontWeight: 700
-                    }}>
-                      ₹{row.orderValue.toLocaleString()}
-                    </TableCell>
+                    {canViewPrice && (
+                      <TableCell sx={{
+                        fontSize: '1rem',
+                        color: '#111827',
+                        py: 2.5,
+                        borderBottom: '1px solid #f0f0f0',
+                        fontWeight: 700
+                      }}>
+                        ₹{row.orderValue.toLocaleString()}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               )}
